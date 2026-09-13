@@ -1,28 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Navbar } from './Navbar';
+import { useAuth } from '../context/AuthContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  isDarkMode: boolean;
-  onToggleTheme: () => void;
+  isDarkMode?: boolean;
+  onToggleTheme?: () => void;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
   children,
-  isDarkMode,
-  onToggleTheme,
+  isDarkMode: propDarkMode,
+  onToggleTheme: propToggleTheme,
   activeTab = 'dashboard',
   onTabChange,
 }) => {
+  const { isDarkMode: contextDarkMode, toggleTheme } = useAuth();
+  const currentDarkMode = propDarkMode ?? contextDarkMode;
+  const currentToggleTheme = propToggleTheme ?? toggleTheme;
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
       <Navbar
-        isDarkMode={isDarkMode}
-        onToggleTheme={onToggleTheme}
+        isDarkMode={currentDarkMode}
+        onToggleTheme={currentToggleTheme}
         activeTab={activeTab}
         onTabChange={onTabChange}
       />

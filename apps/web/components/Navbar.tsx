@@ -21,19 +21,21 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
-  isDarkMode: boolean;
-  onToggleTheme: () => void;
+  isDarkMode?: boolean;
+  onToggleTheme?: () => void;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  isDarkMode,
-  onToggleTheme,
+  isDarkMode: propDarkMode,
+  onToggleTheme: propToggleTheme,
   activeTab = 'dashboard',
   onTabChange,
 }) => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isDarkMode: contextDarkMode, toggleTheme } = useAuth();
+  const currentDarkMode = propDarkMode ?? contextDarkMode;
+  const currentToggleTheme = propToggleTheme ?? toggleTheme;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -60,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     .substring(0, 2);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white/85 dark:bg-slate-900/80 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white/85 dark:bg-[#0b0f19]/80 backdrop-blur-md transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Tagline */}
@@ -113,11 +115,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Theme Toggle Button */}
             <button
-              onClick={onToggleTheme}
+              onClick={currentToggleTheme}
               aria-label="Toggle Theme"
               className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 transition-all shadow-sm"
             >
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+              {currentDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
             </button>
 
             {/* User Profile Link Badge */}

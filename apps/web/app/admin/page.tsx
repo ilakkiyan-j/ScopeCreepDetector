@@ -13,11 +13,7 @@ export default function AdminPage() {
 
   return (
     <ProtectedRoute requiredRole="ADMIN">
-      <AppLayout
-        isDarkMode={isDarkMode ?? true}
-        onToggleTheme={handleToggleTheme ?? (() => {})}
-        activeTab="admin"
-      >
+      <AppLayout activeTab="admin">
         <div className="space-y-6">
           {/* Header Bar */}
           <div className="glass-card rounded-2xl p-6 border border-purple-500/30 bg-purple-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

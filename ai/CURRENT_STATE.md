@@ -1,8 +1,8 @@
 # Current State — Scope Creep Ledger
 
 ## 1. Status Summary
-Phase 9 (**User Profiles & Admin Management**) is **100% Complete & Verified**.
-The application features user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 10 Playwright E2E integration tests pass cleanly.
+Phase 9 (**User Profiles & Admin Management & UI Polish**) is **100% Complete & Verified**.
+The application features full-page Sign In redesign (`apps/web/app/auth/login/page.tsx`), self-signup removal (accounts created strictly by Admins in `/admin`), global light/dark theme synchronization (`AuthContext.tsx` with `localStorage` persistence), hardware-accelerated CSS styling, user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 13 Playwright E2E integration tests pass cleanly.
 
 The next phase is **Phase 10: Multi-Project Workspace**.
 
@@ -10,7 +10,9 @@ The next phase is **Phase 10: Multi-Project Workspace**.
 
 | Component | Status | Details |
 |---|---|---|
-| **Authentication (Cognito)** | ✅ Complete & Verified | `AuthContext.tsx` + `cognito.md` setup guide + `/auth/login` page |
+| **Authentication (Cognito)** | ✅ Complete & Verified | `AuthContext.tsx` + full-page `/auth/login` redesign with persona presets |
+| **Self-Signup Guard** | ✅ Complete & Verified | `/auth/signup` auto-redirects to `/auth/login` (Admin provisioning model) |
+| **Theme System & Lag Fix** | ✅ Complete & Verified | Global `useAuth()` theme state + hardware-accelerated CSS radial gradients |
 | **User Profiles & Admin Portal** | ✅ Complete & Verified | `/profile` customization + `/admin` portal & user management |
 | **Protected Routes & Role Guards** | ✅ Complete & Verified | `ProtectedRoute.tsx` guarding User vs Admin route permissions |
 | **Product Shell & Navigation** | ✅ Complete & Verified | `Navbar.tsx` & `AppLayout.tsx` providing persistent workspace shell |
@@ -19,8 +21,8 @@ The next phase is **Phase 10: Multi-Project Workspace**.
 | **Deterministic Math Engine** | ✅ Complete & Verified | Strictly computes `hours × rate` in code |
 | **Ledger Service** | ✅ Complete & Verified | In-memory fallback + DynamoDB table integration |
 | **Change Order Generator** | ✅ Complete & Verified | Generates change order email + PDF printable receipt |
-| **Frontend Dashboard UI** | ✅ Complete & Verified | Next.js 14, Tailwind, Light/Dark Theme, Role Selector, SVG Chart |
-| **Testing Suite** | ✅ Complete & Verified | 6 Backend tests + 10 Playwright E2E tests passing |
+| **Frontend Dashboard UI** | ✅ Complete & Verified | Next.js 14, Tailwind, Synchronized Light/Dark Theme, Role Selector |
+| **Testing Suite** | ✅ Complete & Verified | 6 Backend tests + 13 Playwright E2E tests passing |
 | **CI/CD Pipeline** | ✅ Complete & Verified | GitHub Actions `.github/workflows/ci.yml` |
 | **AWS Amplify Deployment** | ✅ Live (`ap-southeast-2`) | `https://master.d2ctutlbtt1yhj.amplifyapp.com/` |
 | **Project Workspace** | ⏳ Next Task (Phase 10) | Needs multi-project persistence & navigation |

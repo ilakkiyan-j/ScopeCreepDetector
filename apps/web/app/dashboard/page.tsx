@@ -22,24 +22,9 @@ export default function DashboardPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [summary, setSummary] = useState<ProjectAnalysis | null>(null);
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isChangeOrderOpen, setIsChangeOrderOpen] = useState(false);
-
-  // Sync theme class on <html> tag
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
-  const handleToggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-  };
 
   const handleAnalyze = async (request: AnalyzeRequest) => {
     setIsLoading(true);
@@ -131,8 +116,6 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <AppLayout
-        isDarkMode={isDarkMode}
-        onToggleTheme={handleToggleTheme}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       >

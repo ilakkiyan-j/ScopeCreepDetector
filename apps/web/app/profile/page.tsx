@@ -36,11 +36,7 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <AppLayout
-        isDarkMode={isDarkMode ?? true}
-        onToggleTheme={handleToggleTheme ?? (() => {})}
-        activeTab="settings"
-      >
+      <AppLayout activeTab="settings">
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Header Banner */}
           <div className="glass-card rounded-2xl p-6 border border-slate-200 dark:border-slate-800 flex items-center justify-between">

@@ -8,26 +8,28 @@
   --font-inter: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Light Theme Defaults */
+  /* Light Theme Tokens */
   --bg-main: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-header: rgba(255, 255, 255, 0.90);
+  --bg-card: rgba(255, 255, 255, 0.98);
   --bg-card-subtle: #f1f5f9;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --text-muted: #64748b;
-  --border-color: rgba(203, 213, 225, 0.8);
+  --border-color: rgba(226, 232, 240, 0.9);
   --input-bg: #ffffff;
 }
 
 html.dark {
-  /* Dark Theme Tokens */
+  /* Dark Theme Tokens (Deep Midnight Navy & Slate) */
   --bg-main: #0b0f19;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --bg-card-subtle: #0f172a;
+  --bg-header: rgba(11, 15, 25, 0.90);
+  --bg-card: rgba(15, 23, 42, 0.85);
+  --bg-card-subtle: #1e293b;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.1);
   --input-bg: #0f172a;
 }
 
@@ -36,22 +38,22 @@ body {
   background-color: var(--bg-main);
   color: var(--text-primary);
   min-height: 100vh;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom Glassmorphism Card Style */
+/* Glassmorphism Card Style */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
-  transition: all 0.2s ease-in-out;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-card-hover:hover {
   border-color: rgba(59, 130, 246, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.12);
 }
 
 /* Custom Scrollbars */
@@ -61,11 +63,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-card-subtle);
+  background: var(--bg-main);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
@@ -74,5 +76,5 @@ html.dark ::-webkit-scrollbar-thumb {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94a3b8;
 }

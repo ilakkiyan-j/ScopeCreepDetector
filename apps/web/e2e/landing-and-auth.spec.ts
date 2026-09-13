@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Landing Page & Auth Flow E2E Tests', () => {
-  test('should render public SaaS landing page with hero, features, and pricing', async ({ page }) => {
+  test('should render public SaaS landing page with hero, features, and FAQs', async ({ page }) => {
     await page.goto('/');
 
     // Verify Hero Section Elements
@@ -14,32 +14,31 @@ test.describe('Landing Page & Auth Flow E2E Tests', () => {
     await expect(page.getByText('Deterministic Math Ledger')).toBeVisible();
     await expect(page.getByText('Instant Change-Order Generator')).toBeVisible();
 
-    // Verify Pricing Tiers
-    await expect(page.getByRole('heading', { name: 'Starter Freelancer' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Pro Freelancer' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Agency Studio' })).toBeVisible();
+    // Verify FAQ items
+    await expect(page.getByRole('heading', { name: 'Frequently Asked Questions' })).toBeVisible();
   });
 
-  test('should allow switching between Sign In and Create Account tabs on auth page', async ({ page }) => {
+  test('should render full-page Sign In view with persona presets and redirect to /dashboard', async ({ page }) => {
     await page.goto('/auth/login');
 
-    // Default tab is Sign In
-    await expect(page.getByRole('button', { name: /Sign In to Workspace/i })).toBeVisible();
+    // Verify full-page header and sign in form
+    await expect(page.getByRole('heading', { name: 'Account Sign In' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /User Persona/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Admin Persona/i })).toBeVisible();
 
-    // Click Create Account tab
-    await page.getByRole('button', { name: /Create Account/i }).click();
+    // Click Sign In
+    await page.getByRole('button', { name: /Sign In to Workspace/i }).click();
 
-    // Verify Sign Up form fields are rendered
-    await expect(page.getByText('Full Name')).toBeVisible();
-    await expect(page.getByText('Primary Profession')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Create & Provision Account/i })).toBeVisible();
+    // Verify redirect to /dashboard
+    await expect(page).toHaveURL(/dashboard/);
+    await expect(page.getByText('Ready to Audit Scope Drift')).toBeVisible();
   });
 
-  test('should handle /auth/signup redirect to mode=signup', async ({ page }) => {
+  test('should handle /auth/signup redirect to /auth/login', async ({ page }) => {
     await page.goto('/auth/signup');
 
-    // Verify URL redirected to login?mode=signup and signup fields are visible
-    await expect(page).toHaveURL(/mode=signup/);
-    await expect(page.getByText('Full Name')).toBeVisible();
+    // Verify URL redirected to /auth/login
+    await expect(page).toHaveURL(/auth\/login/);
+    await expect(page.getByRole('heading', { name: 'Account Sign In' })).toBeVisible();
   });
 });

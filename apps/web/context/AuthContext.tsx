@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, UserRole, AuthSession } from '../../../shared/types';
 
 interface AuthContextType {
@@ -10,6 +10,9 @@ interface AuthContextType {
   isLoading: boolean;
   session: AuthSession | null;
   allUsers: UserProfile[];
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+  handleToggleTheme: () => void;
   signIn: (email?: string, password?: string, preferredRole?: UserRole) => Promise<void>;
   signOut: () => void;
   switchRolePersona: (role: UserRole) => void;
@@ -173,6 +176,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('scope_creep_theme');
+      if (stored !== null) {
+        return stored === 'dark';
+      }
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const root = document.documentElement;
+      if (isDarkMode) {
+        root.classList.add('dark');
+        localStorage.setItem('scope_creep_theme', 'dark');
+      } else {
+        root.classList.remove('dark');
+        localStorage.setItem('scope_creep_theme', 'light');
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -182,6 +212,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         session,
         allUsers,
+        isDarkMode,
+        toggleTheme,
+        handleToggleTheme: toggleTheme,
         signIn,
         signOut,
         switchRolePersona,
