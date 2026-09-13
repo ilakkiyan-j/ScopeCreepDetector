@@ -26,7 +26,8 @@ The next phase is **Phase 10: Multi-Project Workspace**.
 | **Project Workspace** | ⏳ Next Task (Phase 10) | Needs multi-project persistence & navigation |
 | **File Staging Workflow** | ⏳ Planned (Phase 11) | Needs multi-file staging dropzone & preview |
 | **Activity Event Logging** | ⏳ Planned (Phase 13) | Needs audit timeline events |
-| **Public Landing Page** | ⏳ Planned (Phase 16) | Needs SaaS marketing landing page |
+| **Public Landing Page** | ✅ Complete & Verified | High-converting SaaS landing page at `/landing` |
+| **Auth UI & Performance** | ✅ Complete & Verified | GPU-accelerated zero-lag auth, Sign In / Sign Up tabs at `/auth/login` & `/auth/signup` |
 
 ## 3. Active Configuration
 - **AWS Region**: `ap-southeast-2` (Asia Pacific Sydney)

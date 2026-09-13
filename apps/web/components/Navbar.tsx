@@ -17,6 +17,7 @@ import {
   Shield,
   LogOut,
   User,
+  Sparkles,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -38,6 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'dashboard', label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'projects', label: 'Projects', href: '/', icon: <FolderKanban className="w-4 h-4" /> },
     { id: 'profile', label: 'Profile', href: '/profile', icon: <User className="w-4 h-4" /> },
+    { id: 'landing', label: 'Product Overview', href: '/landing', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
   ];
 
   if (user?.role === 'ADMIN') {
