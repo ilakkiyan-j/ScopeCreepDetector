@@ -5,10 +5,9 @@ test.describe('Theme & Navigation E2E Tests', () => {
     await page.goto('/dashboard');
   });
 
-  test('should display app title and Amazon Bedrock badge', async ({ page }) => {
+  test('should display app title and navigation items', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Scope Creep Ledger' })).toBeVisible();
-    await expect(page.getByText('Amazon Bedrock')).toBeVisible();
-    await expect(page.getByText('Deterministic Math Verified')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
   });
 
   test('should toggle theme mode between dark and light', async ({ page }) => {

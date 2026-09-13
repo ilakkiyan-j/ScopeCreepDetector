@@ -34,7 +34,11 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signIn(email, password, selectedRole);
-      router.push('/dashboard');
+      if (selectedRole === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } finally {
       setIsLoading(false);
     }

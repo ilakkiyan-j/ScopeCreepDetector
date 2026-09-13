@@ -11,12 +11,12 @@
   /* Light Theme Tokens */
   --bg-main: #f8fafc;
   --bg-header: rgba(255, 255, 255, 0.90);
-  --bg-card: rgba(255, 255, 255, 0.98);
+  --bg-card: #ffffff;
   --bg-card-subtle: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
-  --border-color: rgba(226, 232, 240, 0.9);
+  --border-color: #e2e8f0;
   --input-bg: #ffffff;
 }
 
@@ -24,7 +24,7 @@ html.dark {
   /* Dark Theme Tokens (Deep Midnight Navy & Slate) */
   --bg-main: #0b0f19;
   --bg-header: rgba(11, 15, 25, 0.90);
-  --bg-card: rgba(15, 23, 42, 0.85);
+  --bg-card: rgba(15, 23, 42, 0.90);
   --bg-card-subtle: #1e293b;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;

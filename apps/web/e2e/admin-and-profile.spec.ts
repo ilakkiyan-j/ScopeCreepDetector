@@ -37,11 +37,11 @@ test.describe('Profile & Admin Portal E2E Tests', () => {
     await page.getByRole('button', { name: /Admin Persona/i }).click();
     await page.getByRole('button', { name: /Sign In to Workspace/i }).click();
 
-    // Navigate to /admin
-    await page.goto('/admin');
+    // Verify automatic redirect to /admin
+    await expect(page).toHaveURL(/admin/);
+    await expect(page.getByRole('heading', { name: 'System Administration Portal' })).toBeVisible();
 
     // Verify Admin metrics and table
-    await expect(page.getByRole('heading', { name: 'System Administration Portal' })).toBeVisible();
     await expect(page.getByText('Total Users')).toBeVisible();
     await expect(page.getByText('User Accounts & Permission Directory')).toBeVisible();
     await expect(page.getByText('alex@freelance.dev')).toBeVisible();
@@ -60,5 +60,9 @@ test.describe('Profile & Admin Portal E2E Tests', () => {
 
     // Verify user in directory
     await expect(page.getByText('e2e-test@scopecreep.io')).toBeVisible();
+
+    // Verify Admin cannot access freelancer workstation /dashboard
+    await page.goto('/dashboard');
+    await expect(page.getByRole('heading', { name: 'Admin Account Provisioning' })).toBeVisible();
   });
 });

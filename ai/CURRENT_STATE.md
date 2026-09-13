@@ -2,7 +2,7 @@
 
 ## 1. Status Summary
 Phase 9 (**User Profiles & Admin Management & UI Polish**) is **100% Complete & Verified**.
-The application features full-page Sign In redesign (`apps/web/app/auth/login/page.tsx`), self-signup removal (accounts created strictly by Admins in `/admin`), global light/dark theme synchronization (`AuthContext.tsx` with `localStorage` persistence), hardware-accelerated CSS styling, user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 13 Playwright E2E integration tests pass cleanly.
+The application features Admin Role Isolation (Admins strictly restricted to `/admin` account provisioning, blocked from freelancer workstation), full-page Sign In redesign (`/auth/login`) with role-based routing (`ADMIN` -> `/admin`, `USER` -> `/dashboard`), decluttered role-aware Navbar navigation (`Navbar.tsx`), high-contrast Light/Dark mode styling (`globals.css`), self-signup removal (accounts created strictly by Admins in `/admin`), global light/dark theme synchronization (`AuthContext.tsx` with `localStorage` persistence), hardware-accelerated CSS styling, user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 13 Playwright E2E integration tests pass cleanly.
 
 The next phase is **Phase 10: Multi-Project Workspace**.
 
@@ -10,9 +10,11 @@ The next phase is **Phase 10: Multi-Project Workspace**.
 
 | Component | Status | Details |
 |---|---|---|
-| **Authentication (Cognito)** | ✅ Complete & Verified | `AuthContext.tsx` + full-page `/auth/login` redesign with persona presets |
+| **Admin Role Isolation** | ✅ Complete & Verified | `ADMIN` role strictly restricted to `/admin` provisioning (no workstation) |
+| **Navbar & Header Redesign** | ✅ Complete & Verified | Role-driven navigation tabs, zero badge clutter, clean role badges |
+| **Authentication & Routing** | ✅ Complete & Verified | `AuthContext.tsx` + full-page `/auth/login` with automatic role routing |
 | **Self-Signup Guard** | ✅ Complete & Verified | `/auth/signup` auto-redirects to `/auth/login` (Admin provisioning model) |
-| **Theme System & Lag Fix** | ✅ Complete & Verified | Global `useAuth()` theme state + hardware-accelerated CSS radial gradients |
+| **Theme System & Contrast Fix** | ✅ Complete & Verified | Global `useAuth()` theme state + crisp light/dark mode card contrast |
 | **User Profiles & Admin Portal** | ✅ Complete & Verified | `/profile` customization + `/admin` portal & user management |
 | **Protected Routes & Role Guards** | ✅ Complete & Verified | `ProtectedRoute.tsx` guarding User vs Admin route permissions |
 | **Product Shell & Navigation** | ✅ Complete & Verified | `Navbar.tsx` & `AppLayout.tsx` providing persistent workspace shell |
