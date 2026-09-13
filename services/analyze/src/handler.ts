@@ -43,7 +43,10 @@ export async function handleAnalyzeRequest(
   }
 
   // 3. AI Message Classification Engine
-  const classifications = await classifyMessages(messages, request.originalScope, options);
+  const classifications = await classifyMessages(messages, request.originalScope, {
+    ...options,
+    freelancerRole: request.freelancerRole || 'web-dev',
+  });
 
   // 4. Deterministic Ledger & Cost Construction
   const ledgerItems: LedgerItem[] = [];

@@ -7,24 +7,44 @@
 :root {
   --font-inter: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Light Theme Defaults */
+  --bg-main: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-subtle: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: rgba(203, 213, 225, 0.8);
+  --input-bg: #ffffff;
+}
+
+html.dark {
+  /* Dark Theme Tokens */
+  --bg-main: #0b0f19;
+  --bg-card: rgba(15, 23, 42, 0.75);
+  --bg-card-subtle: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --input-bg: #0f172a;
 }
 
 body {
   font-family: var(--font-inter);
-  background-color: #0b0f19;
-  color: #f8fafc;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
   min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Custom Glassmorphism Card Style */
 .glass-card {
-  background: rgba(15, 23, 42, 0.75);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card-hover {
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease-in-out;
 }
 
@@ -41,14 +61,18 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--bg-card-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #94a3b8;
   border-radius: 4px;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #64748b;
 }

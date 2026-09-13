@@ -16,6 +16,14 @@ export type VerificationStatus =
   | 'review_required'
   | 'rejected';
 
+/** Freelancer role / industry specialization for tailored scope rules */
+export type FreelancerRole =
+  | 'web-dev'
+  | 'ui-ux'
+  | 'copywriter'
+  | 'video-editor'
+  | 'consultant';
+
 /** Normalized chronological message parsed from conversation export */
 export interface ChatMessage {
   id: string;
@@ -38,6 +46,7 @@ export interface Project {
   id: string;
   name: string;
   clientName: string;
+  freelancerRole?: FreelancerRole;
   originalScope: string;
   hourlyRate: number;
   currency: string;
@@ -64,6 +73,7 @@ export interface LedgerItem {
 /** Overall Project Analysis Summary */
 export interface ProjectAnalysis {
   projectId: string;
+  freelancerRole?: FreelancerRole;
   totalMessagesParsed: number;
   classificationsCount: Record<ClassificationCategory, number>;
   totalScopeCreepItems: number;
@@ -77,6 +87,7 @@ export interface ProjectAnalysis {
 export interface AnalyzeRequest {
   projectName: string;
   clientName: string;
+  freelancerRole?: FreelancerRole;
   originalScope: string;
   hourlyRate: number;
   rawConversationText: string;

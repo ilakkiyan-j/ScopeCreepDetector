@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { ProjectForm } from '../components/ProjectForm';
 import { ScopePanel } from '../components/ScopePanel';
@@ -21,8 +21,23 @@ export default function DashboardPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [summary, setSummary] = useState<ProjectAnalysis | null>(null);
 
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isChangeOrderOpen, setIsChangeOrderOpen] = useState(false);
+
+  // Sync theme class on <html> tag
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const handleToggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   const handleAnalyze = async (request: AnalyzeRequest) => {
     setIsLoading(true);
@@ -47,6 +62,7 @@ export default function DashboardPage() {
         id: response.projectId,
         name: request.projectName,
         clientName: request.clientName,
+        freelancerRole: request.freelancerRole,
         originalScope: request.originalScope,
         hourlyRate: request.hourlyRate,
         currency: 'USD',
@@ -111,8 +127,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f19]">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
+      <Header isDarkMode={isDarkMode} onToggleTheme={handleToggleTheme} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Project Creation & Ingestion Form */}
@@ -140,13 +156,13 @@ export default function DashboardPage() {
             </div>
           </section>
         ) : (
-          <div className="glass-card rounded-2xl p-12 text-center border border-slate-800/60">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 mb-4 border border-blue-500/20">
+          <div className="glass-card rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800/60 shadow-sm">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 mb-4 border border-blue-500/20">
               ⚡
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Ready to Audit Scope Drift</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">
-              Click <strong className="text-amber-300 font-semibold">"Load Benchmark Demo Thread"</strong> above to test the entire pipeline with a 18-message client thread, or paste your own project details.
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Ready to Audit Scope Drift</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
+              Click <strong className="text-amber-600 dark:text-amber-300 font-semibold">"Load Benchmark Demo Thread"</strong> above to test the entire pipeline with a 18-message client thread, or paste your own project details.
             </p>
           </div>
         )}

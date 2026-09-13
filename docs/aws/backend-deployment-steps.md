@@ -6,9 +6,9 @@ This step-by-step master guide walks you through setting up all backend AWS clou
 
 ## Architecture Checklist
 - [x] **Frontend**: AWS Amplify (`ap-southeast-2`) — Already deployed!
-- [ ] **Storage**: Amazon S3 bucket (`scope-creep-ledger-conversations-dev`)
-- [ ] **Database**: Amazon DynamoDB tables (`scope-creep-ledger-projects-dev` & `scope-creep-ledger-items-dev`)
-- [ ] **AI Model**: Amazon Bedrock (Anthropic Claude 3 Haiku / Claude 3.5 Haiku)
+- [x] **Storage**: Amazon S3 bucket (`scope-creep-ledger-conversations-dev`)
+- [x] **Database**: Amazon DynamoDB tables (`scope-creep-ledger-projects-dev` & `scope-creep-ledger-items-dev`)
+- [x] **AI Model**: Amazon Bedrock (Anthropic Claude 3 Haiku / Claude 3.5 Haiku)
 - [ ] **Permissions**: IAM Policies
 - [ ] **Environment Variables**: Configure Amplify env vars to switch from offline mock to live AWS cloud execution
 

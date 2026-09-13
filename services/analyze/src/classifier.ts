@@ -11,6 +11,7 @@ const DEFAULT_BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10', 10);
  * Options for classification execution
  */
 export interface ClassifyOptions {
+  freelancerRole?: string;
   confidenceThreshold?: number;
   batchSize?: number;
   mockMode?: boolean;
@@ -77,7 +78,9 @@ async function runBedrockClassification(
 
   // Load system prompt and user prompt template from /ai/prompts/
   const promptsDir = path.join(__dirname, '../../../ai/prompts');
-  const systemPrompt = fs.readFileSync(path.join(promptsDir, 'classification-system.md'), 'utf-8');
+  const rawSystemPrompt = fs.readFileSync(path.join(promptsDir, 'classification-system.md'), 'utf-8');
+  const roleContext = options.freelancerRole || 'web-dev';
+  const systemPrompt = rawSystemPrompt.replace('{{FREELANCER_ROLE}}', roleContext);
   const userPromptTemplate = fs.readFileSync(path.join(promptsDir, 'classification-user.md'), 'utf-8');
 
   const messagesPayload = batch.map((m) => ({
