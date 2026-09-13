@@ -1,8 +1,15 @@
 import { Project, LedgerItem, VerificationStatus } from '../../../shared/types';
 
-// In-memory fallback stores for offline / mock testing
-const mockProjectsStore = new Map<string, Project>();
-const mockLedgerStore = new Map<string, LedgerItem[]>();
+// In-memory fallback stores for offline / mock testing (persisted on globalThis for dev server stability)
+const g = globalThis as any;
+if (!g.__mockProjectsStore) {
+  g.__mockProjectsStore = new Map<string, Project>();
+}
+if (!g.__mockLedgerStore) {
+  g.__mockLedgerStore = new Map<string, LedgerItem[]>();
+}
+const mockProjectsStore: Map<string, Project> = g.__mockProjectsStore;
+const mockLedgerStore: Map<string, LedgerItem[]> = g.__mockLedgerStore;
 
 const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const PROJECTS_TABLE = process.env.DYNAMODB_PROJECTS_TABLE || 'scope-creep-ledger-projects-dev';
