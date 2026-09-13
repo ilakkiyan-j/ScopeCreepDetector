@@ -41,9 +41,33 @@ export interface ClassificationResult {
   estimatedHours: number | null; // Relevant primarily for 'new-ask'
 }
 
+/** User authentication roles */
+export type UserRole = 'USER' | 'ADMIN';
+
+/** Application user profile */
+export interface UserProfile {
+  userId: string;
+  email: string;
+  name: string;
+  profession: string;
+  company?: string;
+  role: UserRole;
+  createdAt: string;
+  lastLoginAt?: string;
+  status: 'active' | 'disabled' | 'invited';
+}
+
+/** Active authentication session */
+export interface AuthSession {
+  user: UserProfile;
+  idToken: string;
+  expiresAt: number;
+}
+
 /** Project configuration baseline */
 export interface Project {
   id: string;
+  userId?: string;
   name: string;
   clientName: string;
   freelancerRole?: FreelancerRole;

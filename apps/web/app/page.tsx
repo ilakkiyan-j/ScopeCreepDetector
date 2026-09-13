@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Header } from '../components/Header';
+import { AppLayout } from '../components/AppLayout';
 import { ProjectForm } from '../components/ProjectForm';
 import { ScopePanel } from '../components/ScopePanel';
 import { LedgerPanel } from '../components/LedgerPanel';
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<ProjectAnalysis | null>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isChangeOrderOpen, setIsChangeOrderOpen] = useState(false);
 
@@ -127,46 +128,47 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
-      <Header isDarkMode={isDarkMode} onToggleTheme={handleToggleTheme} />
+    <AppLayout
+      isDarkMode={isDarkMode}
+      onToggleTheme={handleToggleTheme}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+    >
+      {/* Project Creation & Ingestion Form */}
+      <section>
+        <ProjectForm onAnalyze={handleAnalyze} isLoading={isLoading} />
+      </section>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Project Creation & Ingestion Form */}
-        <section>
-          <ProjectForm onAnalyze={handleAnalyze} isLoading={isLoading} />
-        </section>
-
-        {/* Two-Panel Dashboard View */}
-        {project && summary ? (
-          <section className="animate-fadeIn">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              {/* Left Panel: Original Baseline Scope */}
-              <div className="lg:col-span-5">
-                <ScopePanel project={project} />
-              </div>
-
-              {/* Right Panel: Scope Creep Ledger */}
-              <div className="lg:col-span-7">
-                <LedgerPanel
-                  summary={summary}
-                  onOpenReviewModal={() => setIsReviewOpen(true)}
-                  onOpenChangeOrderModal={() => setIsChangeOrderOpen(true)}
-                />
-              </div>
+      {/* Two-Panel Dashboard View */}
+      {project && summary ? (
+        <section className="animate-fadeIn">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Left Panel: Original Baseline Scope */}
+            <div className="lg:col-span-5">
+              <ScopePanel project={project} />
             </div>
-          </section>
-        ) : (
-          <div className="glass-card rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800/60 shadow-sm">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 mb-4 border border-blue-500/20">
-              ⚡
+
+            {/* Right Panel: Scope Creep Ledger */}
+            <div className="lg:col-span-7">
+              <LedgerPanel
+                summary={summary}
+                onOpenReviewModal={() => setIsReviewOpen(true)}
+                onOpenChangeOrderModal={() => setIsChangeOrderOpen(true)}
+              />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Ready to Audit Scope Drift</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
-              Click <strong className="text-amber-600 dark:text-amber-300 font-semibold">"Load Benchmark Demo Thread"</strong> above to test the entire pipeline with a 18-message client thread, or paste your own project details.
-            </p>
           </div>
-        )}
-      </main>
+        </section>
+      ) : (
+        <div className="glass-card rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800/60 shadow-sm">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 mb-4 border border-blue-500/20">
+            ⚡
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Ready to Audit Scope Drift</h3>
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
+            Click <strong className="text-amber-600 dark:text-amber-300 font-semibold">"Load Benchmark Demo Thread"</strong> above to test the entire pipeline with a 18-message client thread, or paste your own project details.
+          </p>
+        </div>
+      )}
 
       {/* Interactive Review Queue Modal */}
       {project && summary && (
@@ -187,6 +189,6 @@ export default function DashboardPage() {
           summary={summary}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }
