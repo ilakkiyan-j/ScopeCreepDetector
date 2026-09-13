@@ -1,6 +1,6 @@
 const mockS3Store = new Map<string, string>();
 
-const DEFAULT_REGION = process.env.AWS_REGION || 'us-east-1';
+const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || 'scope-creep-ledger-conversations-dev';
 
 function isMockMode(): boolean {

@@ -8,7 +8,7 @@ import { getProject, getLedgerItems } from '../../ledger/src/ledger-service';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const DEFAULT_REGION = process.env.AWS_REGION || 'us-east-1';
+const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const DEFAULT_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-haiku-20240307-v1:0';
 
 export interface ChangeOrderOptions {

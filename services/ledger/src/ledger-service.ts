@@ -4,7 +4,7 @@ import { Project, LedgerItem, VerificationStatus } from '../../../shared/types';
 const mockProjectsStore = new Map<string, Project>();
 const mockLedgerStore = new Map<string, LedgerItem[]>();
 
-const DEFAULT_REGION = process.env.AWS_REGION || 'us-east-1';
+const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const PROJECTS_TABLE = process.env.DYNAMODB_PROJECTS_TABLE || 'scope-creep-ledger-projects-dev';
 const LEDGER_TABLE = process.env.DYNAMODB_LEDGER_TABLE || 'scope-creep-ledger-items-dev';
 
