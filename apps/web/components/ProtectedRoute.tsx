@@ -61,7 +61,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             This workspace area requires Administrator privileges (`ADMIN` role).
           </p>
           <a
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 transition-all"
           >
             Return to User Workspace

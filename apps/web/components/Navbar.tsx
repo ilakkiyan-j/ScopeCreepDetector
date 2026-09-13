@@ -36,10 +36,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, signOut } = useAuth();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'projects', label: 'Projects', href: '/', icon: <FolderKanban className="w-4 h-4" /> },
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'projects', label: 'Projects', href: '/dashboard', icon: <FolderKanban className="w-4 h-4" /> },
     { id: 'profile', label: 'Profile', href: '/profile', icon: <User className="w-4 h-4" /> },
-    { id: 'landing', label: 'Product Overview', href: '/landing', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
+    { id: 'landing', label: 'Product Overview', href: '/', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
   ];
 
   if (user?.role === 'ADMIN') {

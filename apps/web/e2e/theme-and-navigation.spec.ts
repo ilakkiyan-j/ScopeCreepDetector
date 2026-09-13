@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Theme & Navigation E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/dashboard');
   });
 
   test('should display app title and Amazon Bedrock badge', async ({ page }) => {

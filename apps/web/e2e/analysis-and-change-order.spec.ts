@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Analysis & Change Order Flow E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/dashboard');
   });
 
   test('should analyze scope and render financial ledger & analytics chart', async ({ page }) => {

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Landing Page & Auth Flow E2E Tests', () => {
   test('should render public SaaS landing page with hero, features, and pricing', async ({ page }) => {
-    await page.goto('/landing');
+    await page.goto('/');
 
     // Verify Hero Section Elements
     await expect(page.getByRole('heading', { name: /Stop Losing Thousands to Unbilled Scope Creep/i })).toBeVisible();

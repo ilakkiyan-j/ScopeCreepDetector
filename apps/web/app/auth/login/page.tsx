@@ -50,7 +50,7 @@ function LoginFormContent() {
       } else {
         await signIn(email, password, selectedRole);
       }
-      router.push('/');
+      router.push('/dashboard');
     } finally {
       setIsLoading(false);
     }

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Role Selection & Ingestion E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/dashboard');
   });
 
   test('should allow selecting different freelancer roles', async ({ page }) => {
