@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChangeOrderResponseSchema",
+  "type": "object",
+  "required": [
+    "email_subject",
+    "email_body",
+    "itemized_summary",
+    "total_hours",
+    "total_cost"
+  ],
+  "properties": {
+    "email_subject": {
+      "type": "string",
+      "description": "Clear email subject line including project name"
+    },
+    "email_body": {
+      "type": "string",
+      "description": "Professional body text for the client email"
+    },
+    "itemized_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "date", "hours", "cost"],
+        "properties": {
+          "title": { "type": "string" },
+          "date": { "type": "string" },
+          "hours": { "type": "number" },
+          "cost": { "type": "number" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "total_hours": { "type": "number" },
+    "total_cost": { "type": "number" }
+  },
+  "additionalProperties": false
+}

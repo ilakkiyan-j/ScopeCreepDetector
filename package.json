@@ -1,0 +1,20 @@
+{
+  "name": "scope-creep-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cumulative scope-tracking ledger for freelancers and small agencies",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces",
+    "test": "echo \"No tests configured yet\" && exit 0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}
