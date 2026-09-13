@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=apps/web",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=apps/web",
     "test:backend": "npx tsx services/test-all.ts",
     "test:e2e": "npm run test:e2e --workspace=apps/web",
     "test": "npm run test:backend && npm run test:e2e"
