@@ -3,10 +3,18 @@ import { AuthProvider } from '../context/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Scope Creep Ledger — AI Scope Drift Accounting',
+  title: 'Scope Creep Ledger',
   description:
-    'Identify unbilled scope expansion in client conversations, quantify extra hours, and generate defensible receipts.',
+    'Stop doing extra work for free. Turn messy client conversations into an evidence-backed record of additional work, estimated impact, and actionable change orders.',
 };
+
+const THEME_INIT_SCRIPT = `
+try {
+  var t = localStorage.getItem('scope_creep_theme');
+  var dark = t === 'dark' || (t !== 'light');
+  document.documentElement.classList.toggle('dark', dark);
+} catch (e) {}
+`;
 
 export default function RootLayout({
   children,
@@ -14,8 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#0b0f19] text-slate-100 antialiased selection:bg-blue-500 selection:text-white">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="antialiased selection:bg-blue-500 selection:text-white">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

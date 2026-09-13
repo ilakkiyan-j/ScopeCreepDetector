@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateChangeOrderEmail } from '../../../../../services/change-order/src/change-order-service';
-import { ChangeOrderRequest } from '../../../../../shared/types';
+import { ChangeOrderRequest } from '@scope-creep-ledger/shared';
 
 export async function POST(request: Request) {
   try {

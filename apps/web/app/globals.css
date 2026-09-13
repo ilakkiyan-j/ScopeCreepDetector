@@ -1,80 +1,152 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/*
+ * Scope Creep Ledger — Semantic theme tokens.
+ * All component styling MUST consume these tokens (or Tailwind's token
+ * classes that reference them). Never hardcode theme hex values in components.
+ *
+ * Tokens are defined as raw RGB channel triplets so Tailwind's
+ * `rgb(var(--token) / <alpha-value>)` can apply opacity modifiers.
+ */
+
 :root {
   --font-inter: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-jetbrains: 'JetBrains Mono', monospace;
 
-  /* Light Theme Tokens */
-  --bg-main: #f8fafc;
-  --bg-header: rgba(255, 255, 255, 0.90);
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --input-bg: #ffffff;
+  /* Light */
+  --background: 248 250 252; /* #f8fafc slate-50 */
+  --foreground: 15 23 42; /* #0f172a slate-900 */
+
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+
+  --primary: 37 99 235; /* blue-600 */
+  --primary-foreground: 255 255 255;
+
+  --secondary: 241 245 249; /* slate-100 */
+  --secondary-foreground: 51 65 85; /* slate-700 */
+
+  --muted: 241 245 249; /* slate-100 */
+  --muted-foreground: 100 116 139; /* slate-500 */
+
+  --accent: 224 242 254; /* sky-100 */
+  --accent-foreground: 3 105 161; /* sky-700 */
+
+  --border: 226 232 240; /* slate-200 */
+  --input: 226 232 240;
+  --ring: 37 99 235; /* blue-600 */
+
+  --success: 5 150 105; /* emerald-600 */
+  --success-foreground: 255 255 255;
+  --warning: 217 119 6; /* amber-600 */
+  --warning-foreground: 255 251 235; /* amber-50 */
+  --danger: 225 29 72; /* rose-600 */
+  --danger-foreground: 255 255 255;
+  --info: 2 132 199; /* sky-600 */
+  --info-foreground: 240 249 255; /* sky-50 */
 }
 
-html.dark {
-  /* Dark Theme Tokens (Deep Midnight Navy & Slate) */
-  --bg-main: #0b0f19;
-  --bg-header: rgba(11, 15, 25, 0.90);
-  --bg-card: rgba(15, 23, 42, 0.90);
-  --bg-card-subtle: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --input-bg: #0f172a;
+.dark {
+  /* Dark */
+  --background: 15 23 42; /* #0f172a slate-900 */
+  --foreground: 241 245 249; /* #f1f5f9 slate-100 */
+
+  --card: 30 41 59; /* slate-800 */
+  --card-foreground: 241 245 249;
+
+  --popover: 30 41 59;
+  --popover-foreground: 241 245 249;
+
+  --primary: 59 130 246; /* blue-500 */
+  --primary-foreground: 255 255 255;
+
+  --secondary: 51 65 85; /* slate-700 */
+  --secondary-foreground: 226 232 240; /* slate-200 */
+
+  --muted: 51 65 85; /* slate-700 */
+  --muted-foreground: 148 163 184; /* slate-400 */
+
+  --accent: 8 47 73; /* sky-950 */
+  --accent-foreground: 125 211 252; /* sky-300 */
+
+  --border: 51 65 85; /* slate-700 */
+  --input: 71 85 105; /* slate-600 */
+  --ring: 59 130 246; /* blue-500 */
+
+  --success: 16 185 129; /* emerald-500 */
+  --success-foreground: 6 78 59; /* emerald-900 */
+  --warning: 245 158 11; /* amber-500 */
+  --warning-foreground: 69 26 3; /* amber-950 */
+  --danger: 244 63 94; /* rose-500 */
+  --danger-foreground: 76 5 25; /* rose-950 */
+  --info: 14 165 233; /* sky-500 */
+  --info-foreground: 12 74 110; /* sky-950 */
 }
 
-body {
-  font-family: var(--font-inter);
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  min-height: 100vh;
-  transition: background-color 0.2s ease, color 0.2s ease;
+@layer base {
+  * {
+    border-color: rgb(var(--border));
+  }
+
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-family: var(--font-inter);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring) / 0.6);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-/* Glassmorphism Card Style */
-.glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+@layer components {
+  /* Minimal legacy compatibility shims (removed from pages over time) */
+  .glass-card {
+    background: rgb(var(--card));
+    border: 1px solid rgb(var(--border));
+  }
+
+  .glass-card-hover:hover {
+    border-color: rgb(var(--ring) / 0.4);
+  }
 }
 
-.glass-card-hover:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.12);
-}
-
-/* Custom Scrollbars */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-main);
+  background: rgb(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgb(var(--muted-foreground) / 0.5);
   border-radius: 4px;
 }
 
-html.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgb(var(--muted-foreground) / 0.8);
 }

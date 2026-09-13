@@ -2,216 +2,326 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
 import {
   Receipt,
-  Cpu,
-  ShieldCheck,
-  Zap,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  ChevronRight,
-  MessageSquare,
-  Mail,
-  Sun,
-  Moon,
   LogIn,
+  Zap,
+  Moon,
+  Sun,
+  FileSearch,
+  MessageSquareText,
+  Scale,
+  Calculator,
+  FileText,
+  ShieldCheck,
+  ArrowRight,
+  ChevronRight,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui';
 
-export default function RootLandingPage() {
+const STEPS = [
+  {
+    icon: MessageSquareText,
+    title: 'Add your conversations',
+    body: 'Upload client threads from WhatsApp, Slack, email, or CSV exports. Baseline scope and your rate are all you need to begin.',
+  },
+  {
+    icon: FileSearch,
+    title: 'AI isolates scope creep',
+    body: 'Each message is classified against your original scope agreement. New requests are flagged with confidence and effort estimates — backed by the source message.',
+  },
+  {
+    icon: Scale,
+    title: 'Review the evidence',
+    body: 'Low-confidence items go to your review queue. Approve, adjust hours, or reject with one click. Every ledger entry points back to its original message.',
+  },
+  {
+    icon: Calculator,
+    title: 'Know the real impact',
+    body: 'Hours turn into currency through deterministic math — no AI-generated dollar figures, ever. See exactly what unbilled work added up to.',
+  },
+];
+
+const FEATURES = [
+  {
+    icon: FileText,
+    title: 'Evidence-first ledger',
+    body: 'No vague AI verdicts. Every line item is backed by the exact client request, timestamp, and your baseline scope.',
+  },
+  {
+    icon: Calculator,
+    title: 'Deterministic financial math',
+    body: 'Estimated hours are multiplied by your rate in code. The numbers you present are exact and auditable.',
+  },
+  {
+    icon: Scale,
+    title: 'Original scope preserved',
+    body: 'Your agreement stays visible and separate from the conversation, so scope drift is measured against a fixed reference.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Ready-to-send change orders',
+    body: 'Generate a formal change-order email from verified items only — professional, itemized, and ready to send.',
+  },
+];
+
+function PublicNavbar({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Receipt className="h-4 w-4" />
+          </span>
+          <span className="text-sm font-semibold text-foreground">Scope Creep Ledger</span>
+        </Link>
+
+        <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Primary">
+          <Link
+            href="/request-access"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Request Access
+          </Link>
+          <Link
+            href="/sign-in"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Sign In
+          </Link>
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2 md:ml-1">
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+          <DemoButton variant="navbar" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function DemoButton({ variant }: { variant: 'navbar' | 'hero' | 'cta' }) {
+  const { signInDemo, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const goDemo = () => {
+    if (!isAuthenticated) {
+      signInDemo();
+    }
+    router.push('/app/dashboard');
+  };
+
+  if (variant === 'navbar') {
+    return (
+      <Button size="sm" onClick={goDemo}>
+        <Zap className="h-4 w-4" /> Demo
+      </Button>
+    );
+  }
+  if (variant === 'hero') {
+    return (
+      <Button size="lg" onClick={goDemo}>
+        <Zap className="h-4 w-4" /> Open Demo Workspace <ArrowRight className="h-4 w-4" />
+      </Button>
+    );
+  }
+  return (
+    <Button size="lg" onClick={goDemo}>
+      Open Demo Workspace <ArrowRight className="h-4 w-4" />
+    </Button>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow: string;
+  title: string;
+  body?: string;
+}) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="text-xs font-semibold uppercase tracking-wider text-info">{eyebrow}</p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h2>
+      {body && <p className="mt-3 text-sm text-muted-foreground sm:text-base">{body}</p>}
+    </div>
+  );
+}
+
+export default function LandingPage() {
   const { isDarkMode, toggleTheme } = useAuth();
 
-  const featureCards = [
-    {
-      icon: <MessageSquare className="w-6 h-6 text-blue-400" />,
-      title: 'Multi-Channel Scope Ingestion',
-      description:
-        'Paste timestamped conversation threads from Slack, WhatsApp, Email, or CSV exports. Our parser handles fragmented messages effortlessly.',
-    },
-    {
-      icon: <Cpu className="w-6 h-6 text-cyan-400" />,
-      title: 'Amazon Bedrock AI Classifier',
-      description:
-        'Powered by Claude 3 Haiku fine-tuned for software devs, UI/UX designers, and agency roles to distinguish baseline scope from new scope asks.',
-    },
-    {
-      icon: <ShieldCheck className="w-6 h-6 text-emerald-400" />,
-      title: 'Deterministic Math Ledger',
-      description:
-        'No AI math hallucination. Financial totals, estimated hours, and unbilled revenue are calculated strictly in verified backend code.',
-    },
-    {
-      icon: <Mail className="w-6 h-6 text-purple-400" />,
-      title: 'Instant Change-Order Generator',
-      description:
-        'Transform detected scope creep into client-ready, professional change-order email drafts and printable PDF receipts with 1 click.',
-    },
-  ];
-
-  const faqs = [
-    {
-      q: 'How does Scope Creep Ledger detect scope drift?',
-      a: 'You provide your project baseline scope (e.g. 3 pages, 1 revision round at $60/hr) and paste ongoing client conversation messages. Amazon Bedrock AI classifies each message against your baseline scope rules.',
-    },
-    {
-      q: 'Is financial arithmetic trusted and non-hallucinated?',
-      a: 'Yes! The AI engine only identifies scope items and estimated effort hours. All monetary math (Hours × Hourly Rate = Total Cost) is computed deterministically by verified software code.',
-    },
-    {
-      q: 'What formats can I ingest?',
-      a: 'We support raw plain text exports, Slack threads, WhatsApp exports, email threads, and CSV files.',
-    },
-    {
-      q: 'How are accounts provisioned?',
-      a: 'User accounts and permission roles are provisioned securely by your System Administrator via the Cognito-integrated Admin Portal.',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Top Header Navigation */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-0.5 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <div className="h-full w-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Receipt className="h-5 w-5 text-cyan-400" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Scope Creep Ledger
-              </h1>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
-                AI Scope Expansion & Revenue Leakage Audit Workspace
-              </p>
-            </div>
-          </Link>
+    <div className="min-h-screen bg-background text-foreground">
+      <PublicNavbar isDark={isDarkMode} onToggle={toggleTheme} />
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 transition-all"
-            >
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
-            </button>
-
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all"
-            >
-              <LogIn className="w-3.5 h-3.5" /> Sign In
-            </Link>
-
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-md shadow-blue-500/20 transition-all"
-            >
-              <Zap className="w-3.5 h-3.5 text-cyan-300" /> Open Demo Workspace
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-cyan-400 border border-blue-500/20">
-          <Sparkles className="w-3.5 h-3.5" /> Powered by Amazon Bedrock & Claude 3 Haiku
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight max-w-4xl mx-auto leading-tight">
-          Stop Losing Thousands to <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 bg-clip-text text-transparent">Unbilled Scope Creep</span>
-        </h1>
-
-        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Automatically audit client message threads from Slack, WhatsApp, and Email. Identify unbilled revision rounds and feature requests, calculate exact unbilled revenue, and generate instant change-orders.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
-            href="/dashboard"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5"
-          >
-            Launch Interactive Demo <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/auth/login"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-          >
-            Sign In to Account
-          </Link>
-        </div>
-
-        {/* Hero Proof Metrics */}
-        <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-          <div className="glass-card p-4 rounded-2xl text-center">
-            <div className="text-2xl font-black text-blue-600 dark:text-cyan-400">$690</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Avg Unbilled Drift / Project</div>
-          </div>
-          <div className="glass-card p-4 rounded-2xl text-center">
-            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">100%</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Deterministic Financial Math</div>
-          </div>
-          <div className="glass-card p-4 rounded-2xl text-center">
-            <div className="text-2xl font-black text-purple-600 dark:text-purple-400">18 Msg</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Benchmark Thread Audited</div>
-          </div>
-          <div className="glass-card p-4 rounded-2xl text-center">
-            <div className="text-2xl font-black text-amber-600 dark:text-amber-400">1 Click</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Change-Order Email Output</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Showcase Grid */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-            Built for Software Developers, Designers & Agencies
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-            Everything you need to turn ambiguous "quick asks" into clear, billable change order requests.
+      {/* Hero */}
+      <section className="relative px-4 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-info/30 bg-info/10 px-3 py-1 text-xs font-medium text-info">
+            <ShieldCheck className="h-3.5 w-3.5" /> Evidence-backed scope accounting
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featureCards.map((feat, idx) => (
-            <div
-              key={idx}
-              className="glass-card p-6 rounded-2xl space-y-3 hover:border-blue-500/40 transition-all"
-            >
-              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 w-fit">{feat.icon}</div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">{feat.title}</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{feat.description}</p>
-            </div>
-          ))}
+          <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            Stop doing extra work for free.
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
+            Scope Creep Ledger turns messy client conversations into an evidence-backed record of
+            additional work, estimated impact, and actionable change orders.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <DemoButton variant="hero" />
+            <Link href="/sign-in">
+              <Button variant="outline" size="lg">
+                Sign In <LogIn className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
-        <h2 className="text-2xl font-extrabold text-center text-slate-900 dark:text-white">
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="glass-card p-6 rounded-2xl space-y-2">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-blue-500" /> {faq.q}
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pl-6">{faq.a}</p>
+      {/* How It Works */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="How it works"
+          title="From client chat to billing evidence in four steps"
+        />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((step, idx) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={idx}
+                className="rounded-xl border border-border bg-card p-6 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="h-4.5 w-4.5" />
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    Step {idx + 1}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Product Preview */}
+      <section className="border-y border-border bg-muted/40 px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <SectionHeading
+            eyebrow="Product preview"
+            title="A ledger built on evidence, not vibes"
+            body="Every scope-creep item shows the exact request, why it falls outside the original agreement, and what it is worth."
+          />
+          <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-left shadow-card">
+            <div className="flex items-center justify-between gap-3 border-b border-border pb-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Acme Website</p>
+                <p className="text-xs text-muted-foreground">Scope creep ledger</p>
+              </div>
+              <span className="rounded-md bg-success/15 px-2 py-1 text-xs font-medium text-success">
+                6 items · 11.5 additional hours
+              </span>
             </div>
-          ))}
+            <div className="mt-4 space-y-3">
+              {[
+                { q: '"Can you add a login system?"', why: 'Backend was explicitly excluded from scope.', h: '3 hrs' },
+                { q: '"Let\'s do a mobile-friendly version."', why: 'Separate deliverable not in the baseline.', h: '2 hrs' },
+                { q: '"A few more rounds of changes."', why: 'Revision agreement covered one round only.', h: '4 hrs' },
+              ].map((row, i) => (
+                <div key={i} className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-sm font-medium text-foreground">&ldquo;{row.q}&rdquo;</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{row.why}</p>
+                  <p className="mt-2 text-xs font-semibold text-success">{row.h} estimated</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="Features"
+          title="Tools that make unpaid work impossible to ignore"
+        />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((feat, idx) => {
+            const Icon = feat.icon;
+            return (
+              <div key={idx} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="h-4.5 w-4.5" />
+                </span>
+                <h3 className="mt-4 text-base font-semibold text-foreground">{feat.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feat.body}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Why It Matters */}
+      <section className="mx-auto max-w-3xl px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-foreground">Why it matters</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Scope creep rarely shows up in an invoice — it shows up as late nights, resentful
+            projects, and revenue you can&rsquo;t articulate. Scope Creep Ledger turns that invisible
+            work into a clear, evidence-backed number you can act on.
+          </p>
+          <ul className="mx-auto mt-6 flex max-w-md flex-col gap-2 text-left">
+            {[
+              'Every request traced to its source message',
+              'Financial totals computed deterministically in code',
+              'Change orders built from verified items only',
+            ].map((point, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-info" />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t border-border px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Start auditing your client conversations
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
+            Try the demo workspace right now, or request access for a provisioned account.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <DemoButton variant="cta" />
+            <Link href="/request-access">
+              <Button variant="outline" size="lg">Request Access</Button>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
-        <p>Scope Creep Ledger • AI Scope Expansion & Revenue Leakage Audit Workspace</p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500">
-          Powered by Amazon Bedrock, Claude 3 Haiku, AWS Amplify, & Cognito User Pools
-        </p>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
+        <p>Scope Creep Ledger · Evidence-backed scope accounting for freelancers and agencies.</p>
       </footer>
     </div>
   );

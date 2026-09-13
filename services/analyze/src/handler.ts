@@ -111,12 +111,14 @@ export async function handleAnalyzeRequest(
 
   const project = {
     id: projectId,
+    userId: request.userId,
     name: request.projectName,
     clientName: request.clientName,
     freelancerRole: request.freelancerRole || 'web-dev',
     originalScope: request.originalScope,
     hourlyRate,
-    currency: 'USD',
+    currency: request.currency || 'USD',
+    status: 'analyzed' as const,
     createdAt: new Date().toISOString(),
   };
 

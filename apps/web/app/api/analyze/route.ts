@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { handleAnalyzeRequest } from '../../../../../services/analyze/src/handler';
-import { AnalyzeRequest } from '../../../../../shared/types';
+import { AnalyzeRequest } from '@scope-creep-ledger/shared';
 
 export async function POST(request: Request) {
   try {

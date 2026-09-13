@@ -1,60 +1,64 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProfile, UserRole, AuthSession } from '../../../shared/types';
+import { UserProfile, UserRole, AuthSession, SessionMode, Currency } from '@scope-creep-ledger/shared';
 
 interface AuthContextType {
   user: UserProfile | null;
   role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isDemo: boolean;
   session: AuthSession | null;
   allUsers: UserProfile[];
   isDarkMode: boolean;
   toggleTheme: () => void;
-  handleToggleTheme: () => void;
-  signIn: (email?: string, password?: string, preferredRole?: UserRole) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signInDemo: () => void;
   signOut: () => void;
-  switchRolePersona: (role: UserRole) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
+  updateCurrency: (currency: Currency) => void;
   createUser: (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => void;
   toggleUserStatus: (userId: string) => void;
 }
 
 const DEMO_USER_PROFILE: UserProfile = {
-  userId: 'usr_alex_dev_123',
-  email: 'alex@freelance.dev',
-  name: 'Alex Morgan',
+  userId: 'usr_demo_001',
+  email: 'demo@scopecreep.io',
+  name: 'Demo User',
   profession: 'Freelance Web Dev',
-  company: 'Independent Contractor',
+  company: 'Demo Workspace',
   role: 'USER',
   createdAt: '2026-01-15T08:00:00Z',
   status: 'active',
+  defaultCurrency: 'USD',
 };
 
-const DEMO_ADMIN_PROFILE: UserProfile = {
+const ADMIN_PROFILE: UserProfile = {
   userId: 'usr_admin_master_999',
   email: 'admin@scopecreep.io',
-  name: 'Sarah Chen (Admin)',
+  name: 'Sara Chen',
   profession: 'System Administrator',
   company: 'Scope Creep Ledger Team',
   role: 'ADMIN',
   createdAt: '2026-01-01T00:00:00Z',
   status: 'active',
+  defaultCurrency: 'USD',
 };
 
 const INITIAL_USERS: UserProfile[] = [
   DEMO_USER_PROFILE,
-  DEMO_ADMIN_PROFILE,
+  ADMIN_PROFILE,
   {
     userId: 'usr_designer_456',
     email: 'jordan@designstudio.com',
     name: 'Jordan Lee',
-    profession: 'UI/UX & Product Designer',
+    profession: 'Product Designer',
     company: 'PixelCraft Agency',
     role: 'USER',
     createdAt: '2026-02-10T10:30:00Z',
     status: 'active',
+    defaultCurrency: 'INR',
   },
   {
     userId: 'usr_copy_789',
@@ -65,92 +69,141 @@ const INITIAL_USERS: UserProfile[] = [
     role: 'USER',
     createdAt: '2026-03-01T14:15:00Z',
     status: 'active',
+    defaultCurrency: 'INR',
   },
 ];
+
+const SESSION_KEY = 'scope_creep_session';
+const USERS_KEY = 'scope_creep_users';
+const THEME_KEY = 'scope_creep_theme';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
+function buildSession(user: UserProfile, mode: SessionMode, now = Date.now()): AuthSession {
+  return { user, mode, issuedAt: now, expiresAt: now + SESSION_TTL_MS };
+}
+
+function loadStoredSession(): AuthSession | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(SESSION_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as AuthSession;
+    if (!parsed.user || !parsed.mode || parsed.expiresAt < Date.now()) return null;
+    // Demo or admin profiles are re-derived from canonical fixtures to keep
+    // tampered localStorage from elevating privileges.
+    if (parsed.mode === 'demo') {
+      return buildSession(DEMO_USER_PROFILE, 'demo');
+    }
+    if (parsed.user.email === ADMIN_PROFILE.email) {
+      return buildSession(ADMIN_PROFILE, 'signed-in');
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function loadUsers(): UserProfile[] {
+  if (typeof window === 'undefined') return INITIAL_USERS;
+  const raw = localStorage.getItem(USERS_KEY);
+  if (!raw) return INITIAL_USERS;
+  try {
+    const parsed = JSON.parse(raw) as UserProfile[];
+    if (Array.isArray(parsed) && parsed.length >= 2) return parsed;
+  } catch {
+    /* fall through */
+  }
+  return INITIAL_USERS;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('scope_creep_user');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {}
-      }
-    }
-    return DEMO_USER_PROFILE;
-  });
+  // Auth + theme hydrate from localStorage only after mount, so the initial
+  // server and client trees render the same loading state (no hydration mismatch
+  // in AuthGuard/shells, which skirt the client-only session).
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>(() => loadUsers());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const [allUsers, setAllUsers] = useState<UserProfile[]>(INITIAL_USERS);
-  const [isLoading, setIsLoading] = useState(false);
-  const [session, setSession] = useState<AuthSession | null>(() => {
-    if (user) {
-      return {
-        user,
-        idToken: `mock_jwt_token_${user.userId}`,
-        expiresAt: Date.now() + 86400 * 1000,
-      };
-    }
-    return null;
-  });
-
+  const user = session?.user ?? null;
+  const role: UserRole = user?.role ?? 'USER';
   const isAuthenticated = !!user;
-  const role: UserRole = user?.role || 'USER';
+  const isDemo = session?.mode === 'demo'
 
-  const signIn = async (email?: string, password?: string, preferredRole?: UserRole) => {
+  const persistSession = (next: AuthSession | null) => {
+    if (typeof window === 'undefined') return;
+    if (next) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(next));
+    } else {
+      localStorage.removeItem(SESSION_KEY);
+    }
+  };
+
+  const persistUsers = (users: UserProfile[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  };
+
+  const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const selectedProfile = preferredRole === 'ADMIN' || email?.includes('admin')
-        ? DEMO_ADMIN_PROFILE
-        : {
-            ...DEMO_USER_PROFILE,
-            email: email || DEMO_USER_PROFILE.email,
-          };
+      const normalized = email.trim().toLowerCase();
+      const normalizedPassword = password.trim();
 
-      const newSession: AuthSession = {
-        user: selectedProfile,
-        idToken: `mock_jwt_token_${selectedProfile.userId}`,
-        expiresAt: Date.now() + 86400 * 1000,
-      };
-
-      setUser(selectedProfile);
-      setSession(newSession);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('scope_creep_user', JSON.stringify(selectedProfile));
+      // Mock validation: seeded accounts accept any non-empty password.
+      if (!normalized || !normalizedPassword) {
+        return { ok: false, error: 'Enter your email and password to continue.' };
       }
+
+      const profile = allUsers.find((u) => u.email.toLowerCase() === normalized);
+      if (!profile) {
+        return {
+          ok: false,
+          error: 'No account found with this email. Accounts are provisioned by your administrator.',
+        };
+      }
+      if (profile.status === 'disabled') {
+        return { ok: false, error: 'This account is disabled. Contact your administrator.' };
+      }
+
+      const mode: SessionMode = 'signed-in';
+      const next = buildSession({ ...profile, lastLoginAt: new Date().toISOString() }, mode);
+      setSession(next);
+      persistSession(next);
+      return { ok: true };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signOut = () => {
-    setUser(null);
-    setSession(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('scope_creep_user');
-    }
+  const signInDemo = () => {
+    const next = buildSession({ ...DEMO_USER_PROFILE, lastLoginAt: new Date().toISOString() }, 'demo');
+    setSession(next);
+    persistSession(next);
   };
 
-  const switchRolePersona = (newRole: UserRole) => {
-    const profile = newRole === 'ADMIN' ? DEMO_ADMIN_PROFILE : DEMO_USER_PROFILE;
-    setUser(profile);
-    setSession({
-      user: profile,
-      idToken: `mock_jwt_token_${profile.userId}`,
-      expiresAt: Date.now() + 86400 * 1000,
-    });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('scope_creep_user', JSON.stringify(profile));
-    }
+  const signOut = () => {
+    setSession(null);
+    persistSession(null);
   };
 
   const updateProfile = (updates: Partial<UserProfile>) => {
-    if (!user) return;
-    const updated = { ...user, ...updates };
-    setUser(updated);
-    setAllUsers((prev) => prev.map((u) => (u.userId === user.userId ? updated : u)));
+    if (!session) return;
+    const updated = { ...session.user, ...updates };
+    const next = buildSession(updated, session.mode, session.issuedAt);
+    setSession(next);
+    persistSession(next);
+    setAllUsers((prev) => {
+      const mapped = prev.map((u) => (u.userId === updated.userId ? updated : u));
+      persistUsers(mapped);
+      return mapped;
+    });
+  };
+
+  const updateCurrency = (currency: Currency) => {
+    updateProfile({ defaultCurrency: currency });
   };
 
   const createUser = (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => {
@@ -158,50 +211,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...newUser,
       userId: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
+      defaultCurrency: newUser.defaultCurrency ?? 'INR',
     };
-    setAllUsers((prev) => [...prev, created]);
+    setAllUsers((prev) => {
+      const next = [...prev, created];
+      persistUsers(next);
+      return next;
+    });
   };
 
   const toggleUserStatus = (userId: string) => {
-    setAllUsers((prev) =>
-      prev.map((u) => {
-        if (u.userId === userId) {
-          return {
-            ...u,
-            status: u.status === 'active' ? 'disabled' : 'active',
-          };
-        }
-        return u;
-      })
-    );
+    setAllUsers((prev) => {
+      const next = prev.map((u) =>
+        u.userId === userId
+          ? { ...u, status: u.status === 'active' ? ('disabled' as const) : ('active' as const) }
+          : u
+      );
+      persistUsers(next);
+      return next;
+    });
   };
 
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('scope_creep_theme');
-      if (stored !== null) {
-        return stored === 'dark';
-      }
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+
+  // Client-only hydration: restore the stored session and theme, and apply the
+  // persisted theme to <html> so the mount-time effect below cannot clobber it.
+  useEffect(() => {
+    setSession(loadStoredSession());
+    try {
+      const stored = localStorage.getItem(THEME_KEY);
+      const storedDark = stored === null ? true : stored === 'dark';
+      setIsDarkMode(storedDark);
+      document.documentElement.classList.toggle('dark', storedDark);
+    } catch {
+      /* ignore storage errors */
     }
-    return true;
-  });
+    setIsLoading(false);
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const root = document.documentElement;
-      if (isDarkMode) {
-        root.classList.add('dark');
-        localStorage.setItem('scope_creep_theme', 'dark');
-      } else {
-        root.classList.remove('dark');
-        localStorage.setItem('scope_creep_theme', 'light');
-      }
+    // Skip the mount render — the hydration effect above restored the theme.
+    if (!isHydrated) return;
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem(THEME_KEY, 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem(THEME_KEY, 'light');
     }
-  }, [isDarkMode]);
+  }, [isHydrated, isDarkMode]);
 
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+  const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   return (
     <AuthContext.Provider
@@ -210,15 +272,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role,
         isAuthenticated,
         isLoading,
+        isDemo,
         session,
         allUsers,
         isDarkMode,
         toggleTheme,
-        handleToggleTheme: toggleTheme,
         signIn,
+        signInDemo,
         signOut,
-        switchRolePersona,
         updateProfile,
+        updateCurrency,
         createUser,
         toggleUserStatus,
       }}

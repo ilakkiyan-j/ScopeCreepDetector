@@ -1,39 +1,50 @@
 # Current State — Scope Creep Ledger
 
+> **Updated**: 2026-09-13 — Frontend redesign in progress (see `UI_AUDIT.md` for the baseline audit).
+
 ## 1. Status Summary
-Phase 9 (**User Profiles & Admin Management & UI Polish**) is **100% Complete & Verified**.
-The application features Admin Role Isolation (Admins strictly restricted to `/admin` account provisioning, blocked from freelancer workstation), full-page Sign In redesign (`/auth/login`) with role-based routing (`ADMIN` -> `/admin`, `USER` -> `/dashboard`), decluttered role-aware Navbar navigation (`Navbar.tsx`), high-contrast Light/Dark mode styling (`globals.css`), self-signup removal (accounts created strictly by Admins in `/admin`), global light/dark theme synchronization (`AuthContext.tsx` with `localStorage` persistence), hardware-accelerated CSS styling, user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 13 Playwright E2E integration tests pass cleanly.
 
-The next phase is **Phase 10: Multi-Project Workspace**.
+**Frontend product redesign in progress.** The audit (`ai/UI_AUDIT.md`) is complete. The previous flat route model (`/dashboard`, `/admin`, `/profile`) is being rebuilt into the strict public / user (`/app/*`) / admin (`/admin/*`) architecture with a semantic design system, dual app shells, staged file upload, evidence-first ledger, and user+project currency handling. Backend services (analyze, ledger, change-order) are preserved intact. MVP auth is a cleaned-up mock (no silent auto-login, isolated authenticated demo user, no fake JWT claims); Cognito remains the documented production path.
 
-## 2. Component Status
+### Current Progress by Phase
+| Phase | Status |
+|---|---|
+| Audit & docs (`/ai/UI_AUDIT.md` + updated knowledge files) | ✅ Complete |
+| Phase 1 · Route architecture | ⏳ In progress |
+| Phase 2 · Design system | ⏳ Pending |
+| Phase 3 · AppShell / AdminShell | ⏳ Pending |
+| Phase 4 · Landing + Sign-in + Request Access + demo user | ⏳ Pending |
+| Phase 5 · Dashboard + projects | ⏳ Pending |
+| Phase 6 · Project workspace | ⏳ Pending |
+| Phase 7 · File upload staging | ⏳ Pending |
+| Phase 8 · Analysis UI | ⏳ Pending |
+| Phase 9 · Ledger + evidence | ⏳ Pending |
+| Phase 10 · Currency | ⏳ Pending |
+| Phase 11 · Profile & preferences | ⏳ Pending |
+| Phase 12 · Activity | ⏳ Pending |
+| Phase 13 · Admin workspace | ⏳ Pending |
+| Phase 14 · API additions | ⏳ Pending |
+| Phase 15 · QA | ⏳ Pending |
+
+## 2. Preserved Backend Components (unchanged)
 
 | Component | Status | Details |
 |---|---|---|
-| **Admin Role Isolation** | ✅ Complete & Verified | `ADMIN` role strictly restricted to `/admin` provisioning (no workstation) |
-| **Navbar & Header Redesign** | ✅ Complete & Verified | Role-driven navigation tabs, zero badge clutter, clean role badges |
-| **Authentication & Routing** | ✅ Complete & Verified | `AuthContext.tsx` + full-page `/auth/login` with automatic role routing |
-| **Self-Signup Guard** | ✅ Complete & Verified | `/auth/signup` auto-redirects to `/auth/login` (Admin provisioning model) |
-| **Theme System & Contrast Fix** | ✅ Complete & Verified | Global `useAuth()` theme state + crisp light/dark mode card contrast |
-| **User Profiles & Admin Portal** | ✅ Complete & Verified | `/profile` customization + `/admin` portal & user management |
-| **Protected Routes & Role Guards** | ✅ Complete & Verified | `ProtectedRoute.tsx` guarding User vs Admin route permissions |
-| **Product Shell & Navigation** | ✅ Complete & Verified | `Navbar.tsx` & `AppLayout.tsx` providing persistent workspace shell |
-| **AI Classification Engine** | ✅ Complete & Verified | Amazon Bedrock + Claude 3 Haiku with role prompt rules |
-| **Conversation Parser** | ✅ Complete & Verified | Parses timestamped Slack, WhatsApp, Email, CSV threads |
-| **Deterministic Math Engine** | ✅ Complete & Verified | Strictly computes `hours × rate` in code |
-| **Ledger Service** | ✅ Complete & Verified | In-memory fallback + DynamoDB table integration |
-| **Change Order Generator** | ✅ Complete & Verified | Generates change order email + PDF printable receipt |
-| **Frontend Dashboard UI** | ✅ Complete & Verified | Next.js 14, Tailwind, Synchronized Light/Dark Theme, Role Selector |
-| **Testing Suite** | ✅ Complete & Verified | 6 Backend tests + 13 Playwright E2E tests passing |
-| **CI/CD Pipeline** | ✅ Complete & Verified | GitHub Actions `.github/workflows/ci.yml` |
-| **AWS Amplify Deployment** | ✅ Live (`ap-southeast-2`) | `https://master.d2ctutlbtt1yhj.amplifyapp.com/` |
-| **Project Workspace** | ⏳ Next Task (Phase 10) | Needs multi-project persistence & navigation |
-| **File Staging Workflow** | ⏳ Planned (Phase 11) | Needs multi-file staging dropzone & preview |
-| **Activity Event Logging** | ⏳ Planned (Phase 13) | Needs audit timeline events |
-| **Public Landing Page** | ✅ Complete & Verified | High-converting SaaS landing page at root `/` |
-| **Workspace & Dashboard** | ✅ Complete & Verified | Protected audit workspace at `/dashboard` |
+| AI Classification Engine | ✅ Working | Amazon Bedrock + Claude 3 Haiku with role prompt rules (mock fallback) |
+| Conversation Parser | ✅ Working | Parses timestamped Slack, WhatsApp, Email, CSV threads |
+| Deterministic Math Engine | ✅ Working | Strictly computes `hours × rate` in code |
+| Ledger Service | ✅ Working | In-memory fallback + DynamoDB tables |
+| Change Order Generator | ✅ Working | Backend email generator (service test passing; UI previously bypassed it) |
+| S3 Storage | ✅ Working | Raw conversation storage util |
 
-## 3. Active Configuration
+## 3. Rediscovery / Behavior Changes from Audit
+
+- **Auth**: `AuthContext` was silently auto-authenticating every visitor as demo user and issuing fabricated `mock_jwt_` tokens. Now: visitors unauthenticated by default; demo is an explicit authenticated demo USER session (Option A); no fake JWT claims.
+- **Theme**: `darkMode: 'class'` was missing in `tailwind.config.js`, so `dark:` variants ignored the app toggle (responded to OS media query). Now: token-based semantic theming.
+- **Currency**: was hardcoded `'USD'` in two places, never surfaced. Now: user default + project currency, locale formatting, no FX conversion.
+- **Change order**: UI built emails client-side, bypassing `/api/change-order`. Now: UI consumes the backend endpoint.
+
+## 4. Active Configuration
 - **AWS Region**: `ap-southeast-2` (Asia Pacific Sydney)
 - **Bedrock Model ID**: `anthropic.claude-3-haiku-20240307-v1:0`
 - **S3 Bucket**: `scope-creep-ledger-conversations-dev`
@@ -41,5 +52,5 @@ The next phase is **Phase 10: Multi-Project Workspace**.
 - **DynamoDB Ledger Table**: `scope-creep-ledger-items-dev`
 - **Confidence Threshold**: `0.70`
 
-## 4. Next Recommended Step
-Proceed to **Phase 10: Multi-Project Workspace** (Multi-project persistence, project switching header/sidebar, baseline scope editing, and project archiving).
+## 5. Next Recommended Step
+Proceed through the redesign phases in `UI_AUDIT.md` §20 (1 → 15). Currently on **Phase 1: Route architecture**.

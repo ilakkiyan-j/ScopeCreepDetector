@@ -77,6 +77,39 @@ export async function getProject(projectId: string): Promise<Project | null> {
 }
 
 /**
+ * Lists all projects, most recently created first.
+ */
+export async function listProjects(): Promise<Project[]> {
+  if (isMockMode()) {
+    return Array.from(mockProjectsStore.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  try {
+    const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+    const { DynamoDBDocumentClient, ScanCommand } = await import('@aws-sdk/lib-dynamodb');
+
+    const client = new DynamoDBClient({ region: DEFAULT_REGION });
+    const docClient = DynamoDBDocumentClient.from(client);
+
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PROJECTS_TABLE,
+      })
+    );
+
+    const projects = (result.Items as Project[]) || [];
+    return projects.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch (err: any) {
+    console.warn(`[DynamoDB Warning] Failed to scan projects (${err.message}). Using local store fallback.`);
+    return Array.from(mockProjectsStore.values());
+  }
+}
+
+/**
  * Persists batch of scope creep ledger items
  */
 export async function saveLedgerItems(items: LedgerItem[]): Promise<void> {

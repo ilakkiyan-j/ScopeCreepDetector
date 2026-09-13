@@ -44,6 +44,21 @@ export interface ClassificationResult {
 /** User authentication roles */
 export type UserRole = 'USER' | 'ADMIN';
 
+/**
+ * Supported ISO currency codes for project rates & scope-creep value.
+ * A code identifies the currency only — it does NOT perform FX conversion.
+ */
+export type Currency =
+  | 'INR'
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'AUD'
+  | 'CAD'
+  | 'SGD'
+  | 'AED'
+  | 'JPY';
+
 /** Application user profile */
 export interface UserProfile {
   userId: string;
@@ -55,14 +70,33 @@ export interface UserProfile {
   createdAt: string;
   lastLoginAt?: string;
   status: 'active' | 'disabled' | 'invited';
+  /** User's default currency; new projects inherit this value. */
+  defaultCurrency?: Currency;
 }
+
+/** User display/settings preferences (backed by profile storage for MVP). */
+export interface UserPreferences {
+  currency: Currency;
+  theme?: 'light' | 'dark' | 'system';
+}
+
+/**
+ * Session mode — honest representation of how the user entered the app.
+ * The MVP uses a mock auth layer (no real JWT); `demo` marks the isolated
+ * demo account (always USER role, never routes to admin).
+ */
+export type SessionMode = 'demo' | 'signed-in';
 
 /** Active authentication session */
 export interface AuthSession {
   user: UserProfile;
-  idToken: string;
+  mode: SessionMode;
+  issuedAt: number;
   expiresAt: number;
 }
+
+/** Project lifecycle status */
+export type ProjectStatus = 'draft' | 'analyzed' | 'review' | 'change-orders' | 'closed';
 
 /** Project configuration baseline */
 export interface Project {
@@ -73,7 +107,8 @@ export interface Project {
   freelancerRole?: FreelancerRole;
   originalScope: string;
   hourlyRate: number;
-  currency: string;
+  currency: Currency;
+  status?: ProjectStatus;
   createdAt: string; // ISO string
 }
 
@@ -114,7 +149,10 @@ export interface AnalyzeRequest {
   freelancerRole?: FreelancerRole;
   originalScope: string;
   hourlyRate: number;
+  currency?: Currency;
   rawConversationText: string;
+  /** Owner of the analysis (mock auth identity for MVP attribution). */
+  userId?: string;
 }
 
 /** API Response: POST /analyze */

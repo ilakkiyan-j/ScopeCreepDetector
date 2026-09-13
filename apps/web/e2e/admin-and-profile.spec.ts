@@ -1,68 +1,60 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Profile & Admin Portal E2E Tests', () => {
-  test('should navigate to user profile and update profile details', async ({ page }) => {
-    await page.goto('/profile');
+test.describe('Admin Console & User Management E2E', () => {
+  test('should open the admin console for the admin account', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill('admin@scopecreep.io');
+    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByRole('button', { name: /Sign In/i }).click();
 
-    // Verify profile page components are rendered
-    await expect(page.getByText('User Profile & Professional Specialization')).toBeVisible();
-    await expect(page.getByText('Email Address (Cognito Managed)')).toBeVisible();
-
-    // Fill profile input
-    const companyInput = page.getByPlaceholder('e.g. Independent Contractor / Acme Agency');
-    await companyInput.fill('Apex Software Labs');
-
-    // Click save
-    await page.getByRole('button', { name: /Save Profile Changes/i }).click();
-
-    // Verify success indicator
-    await expect(page.getByText('Profile Saved!')).toBeVisible();
+    // ADMIN role is steered to the admin console
+    await expect(page).toHaveURL(/\/admin\/dashboard/);
+    await expect(page.getByRole('heading', { name: 'Admin Overview' })).toBeVisible();
+    await expect(page.getByText('Scope creep value by currency')).toBeVisible();
   });
 
-  test('should block non-admin users with 403 Access Denied on Admin Portal', async ({ page }) => {
-    // Log in as standard USER persona
-    await page.goto('/auth/login');
-    await page.getByRole('button', { name: /User Persona/i }).click();
-    await page.getByRole('button', { name: /Sign In to Workspace/i }).click();
+  test('should block a USER account from /admin', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill('jordan@designstudio.com');
+    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByRole('button', { name: /Sign In/i }).click();
+    await expect(page).toHaveURL(/\/app\/dashboard/);
 
-    // Try accessing /admin
     await page.goto('/admin');
-    await expect(page.getByText('Access Denied (403)')).toBeVisible();
-    await expect(page.getByText('Administrator privileges')).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/dashboard/);
   });
 
-  test('should render Admin Portal dashboard and allow user management when signed in as ADMIN', async ({ page }) => {
-    // Log in as ADMIN persona
-    await page.goto('/auth/login');
-    await page.getByRole('button', { name: /Admin Persona/i }).click();
-    await page.getByRole('button', { name: /Sign In to Workspace/i }).click();
+  test('should list users and add a new account from the admin console', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill('admin@scopecreep.io');
+    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByRole('button', { name: /Sign In/i }).click();
+    await expect(page).toHaveURL(/\/admin\/dashboard/);
 
-    // Verify automatic redirect to /admin
-    await expect(page).toHaveURL(/admin/);
-    await expect(page.getByRole('heading', { name: 'System Administration Portal' })).toBeVisible();
+    // Users directory
+    await page.goto('/admin/users');
+    await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+    await expect(page.getByText('demo@scopecreep.io')).toBeVisible();
 
-    // Verify Admin metrics and table
-    await expect(page.getByText('Total Users')).toBeVisible();
-    await expect(page.getByText('User Accounts & Permission Directory')).toBeVisible();
-    await expect(page.getByText('alex@freelance.dev')).toBeVisible();
+    // Create a user
+    await page.getByRole('button', { name: /Add user/i }).click();
+    await page.getByLabel('Full name').fill('E2E Test User');
+    await page.getByLabel('Email').fill('e2e-test@scopecreep.io');
+    await page.getByRole('button', { name: 'Create account' }).click();
 
-    // Open provision user modal
-    await page.getByRole('button', { name: /Create User Account/i }).click();
-    await expect(page.getByRole('heading', { name: 'Create New User Account' })).toBeVisible();
-
-    // Fill modal form
-    await page.locator('input[placeholder="e.g. David Miller"]').fill('E2E Test User');
-    await page.locator('input[placeholder="david@agency.com"]').fill('e2e-test@scopecreep.io');
-    await page.locator('input[placeholder="e.g. Full-Stack Engineer"]').fill('Automation QA Engineer');
-
-    // Submit user creation
-    await page.getByRole('button', { name: 'Create & Issue Invitation' }).click();
-
-    // Verify user in directory
+    await expect(page.getByText(/Account created/)).toBeVisible();
+    await page.getByRole('button', { name: 'Done' }).click();
     await expect(page.getByText('e2e-test@scopecreep.io')).toBeVisible();
+  });
 
-    // Verify Admin cannot access freelancer workstation /dashboard
-    await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: 'Admin Account Provisioning' })).toBeVisible();
+  test('should render admin settings with deployment info', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill('admin@scopecreep.io');
+    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByRole('button', { name: /Sign In/i }).click();
+
+    await page.goto('/admin/settings');
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Deployment' })).toBeVisible();
   });
 });
