@@ -1,16 +1,17 @@
 # Current State — Scope Creep Ledger
 
 ## 1. Status Summary
-Phase 8 (**Authentication & Authorization**) is **100% Complete & Verified**.
-The application features Amazon Cognito User Pool identity management documentation (`docs/aws/cognito.md`), client-side `AuthContext` provider, user persona switcher (User vs Admin), `/auth/login` sign-in page, `ProtectedRoute` wrapper component, and `UserProfile` domain contracts. All 13 unit, service, and Playwright E2E integration tests pass cleanly.
+Phase 9 (**User Profiles & Admin Management**) is **100% Complete & Verified**.
+The application features user profile customization (`apps/web/app/profile/page.tsx`), system administration portal (`apps/web/app/admin/page.tsx`), user directory table & provisioning modal (`UserManagementTable.tsx`), platform KPI metrics (`AdminMetrics.tsx`), persistent session storage, and role-based access control (RBAC 403 fallback). All 6 backend test suites and 10 Playwright E2E integration tests pass cleanly.
 
-The next phase is **Phase 9: User & Admin Management** (User profile page with profession fields, admin dashboard portal, user status controls, and system usage overview).
+The next phase is **Phase 10: Multi-Project Workspace**.
 
 ## 2. Component Status
 
 | Component | Status | Details |
 |---|---|---|
 | **Authentication (Cognito)** | ✅ Complete & Verified | `AuthContext.tsx` + `cognito.md` setup guide + `/auth/login` page |
+| **User Profiles & Admin Portal** | ✅ Complete & Verified | `/profile` customization + `/admin` portal & user management |
 | **Protected Routes & Role Guards** | ✅ Complete & Verified | `ProtectedRoute.tsx` guarding User vs Admin route permissions |
 | **Product Shell & Navigation** | ✅ Complete & Verified | `Navbar.tsx` & `AppLayout.tsx` providing persistent workspace shell |
 | **AI Classification Engine** | ✅ Complete & Verified | Amazon Bedrock + Claude 3 Haiku with role prompt rules |
@@ -19,11 +20,10 @@ The next phase is **Phase 9: User & Admin Management** (User profile page with p
 | **Ledger Service** | ✅ Complete & Verified | In-memory fallback + DynamoDB table integration |
 | **Change Order Generator** | ✅ Complete & Verified | Generates change order email + PDF printable receipt |
 | **Frontend Dashboard UI** | ✅ Complete & Verified | Next.js 14, Tailwind, Light/Dark Theme, Role Selector, SVG Chart |
-| **Testing Suite** | ✅ Complete & Verified | 6 Backend tests + 7 Playwright E2E tests passing |
+| **Testing Suite** | ✅ Complete & Verified | 6 Backend tests + 10 Playwright E2E tests passing |
 | **CI/CD Pipeline** | ✅ Complete & Verified | GitHub Actions `.github/workflows/ci.yml` |
 | **AWS Amplify Deployment** | ✅ Live (`ap-southeast-2`) | `https://master.d2ctutlbtt1yhj.amplifyapp.com/` |
-| **User & Admin Management** | ⏳ Next Task (Phase 9) | Needs user profiles, profession fields, admin portal |
-| **Project Workspace** | ⏳ Planned (Phase 10) | Needs multi-project persistence & navigation |
+| **Project Workspace** | ⏳ Next Task (Phase 10) | Needs multi-project persistence & navigation |
 | **File Staging Workflow** | ⏳ Planned (Phase 11) | Needs multi-file staging dropzone & preview |
 | **Activity Event Logging** | ⏳ Planned (Phase 13) | Needs audit timeline events |
 | **Public Landing Page** | ⏳ Planned (Phase 16) | Needs SaaS marketing landing page |
@@ -37,4 +37,4 @@ The next phase is **Phase 9: User & Admin Management** (User profile page with p
 - **Confidence Threshold**: `0.70`
 
 ## 4. Next Recommended Step
-Proceed to **Phase 9: User & Admin Management** (User profile page with profession fields, admin dashboard portal, user creation, user status controls, and usage overview).
+Proceed to **Phase 10: Multi-Project Workspace** (Multi-project persistence, project switching header/sidebar, baseline scope editing, and project archiving).

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -15,6 +16,7 @@ import {
   UserCheck,
   Shield,
   LogOut,
+  User,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -33,11 +35,19 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, signOut } = useAuth();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'projects', label: 'Projects', icon: <FolderKanban className="w-4 h-4" /> },
-    { id: 'activity', label: 'Activity', icon: <History className="w-4 h-4" /> },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
+    { id: 'dashboard', label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'projects', label: 'Projects', href: '/', icon: <FolderKanban className="w-4 h-4" /> },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: <User className="w-4 h-4" /> },
   ];
+
+  if (user?.role === 'ADMIN') {
+    navItems.push({
+      id: 'admin',
+      label: 'Admin Portal',
+      href: '/admin',
+      icon: <Shield className="w-4 h-4 text-purple-500" />,
+    });
+  }
 
   const userName = user?.name || 'Alex Morgan';
   const userProfession = user?.profession || 'Freelance Web Dev';
@@ -52,8 +62,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Tagline */}
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-0.5 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-0.5 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <div className="h-full w-full bg-slate-950 rounded-[10px] flex items-center justify-center">
                 <Receipt className="h-5 w-5 text-cyan-400" />
               </div>
@@ -71,13 +81,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 AI Scope Drift Accounting Workspace
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-1 bg-slate-100 dark:bg-slate-950/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.id}
+                href={item.href}
                 onClick={() => onTabChange && onTabChange(item.id)}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   activeTab === item.id
@@ -87,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 {item.icon}
                 <span>{item.label}</span>
-              </button>
+              </Link>
             ))}
           </nav>
 
@@ -107,8 +118,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
             </button>
 
-            {/* User Profile Badge */}
-            <div className="flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+            {/* User Profile Link Badge */}
+            <Link
+              href="/profile"
+              className="flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-800 hover:opacity-90 transition-opacity"
+            >
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                 {userInitials}
               </div>
@@ -123,7 +137,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400">{userProfession}</span>
               </div>
-            </div>
+            </Link>
+
+            {/* Sign Out Button */}
+            {user && (
+              <button
+                onClick={signOut}
+                title="Sign Out"
+                className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-all shadow-sm"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
