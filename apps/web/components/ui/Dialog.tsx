@@ -22,12 +22,20 @@ export function Dialog({
   const panelRef = React.useRef<HTMLDivElement>(null);
   const closeRef = React.useRef<HTMLButtonElement>(null);
 
+  // Keep the latest onClose available to the focus/scroll-lock effect without
+  // adding it to the deps array (inline callbacks change identity on every
+  // parent render, which previously re-ran the effect and stole focus per keystroke).
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   React.useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         e.preventDefault();
         return;
       }
@@ -55,7 +63,7 @@ export function Dialog({
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = '';
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
