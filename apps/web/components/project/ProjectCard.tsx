@@ -51,10 +51,17 @@ export function ProjectCard({
             <Badge variant={PROJECT_STATUS_TONE[status]}>
               {PROJECT_STATUS_LABEL[status]}
             </Badge>
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded-full border border-success/20">
-              <span className="h-1 w-1 rounded-full bg-success animate-pulse" />
-              Cloud Synced
-            </span>
+            {(project as any).isLocalOnly ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full border border-warning/20">
+                <span className="h-1 w-1 rounded-full bg-warning" />
+                Saved Locally
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded-full border border-success/20">
+                <span className="h-1 w-1 rounded-full bg-success animate-pulse" />
+                Cloud Synced
+              </span>
+            )}
           </div>
         </div>
 

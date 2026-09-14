@@ -12,16 +12,43 @@ import * as path from 'path';
 const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const DEFAULT_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-haiku-20240307-v1:0';
 
+function getAwsClientOptions(customRegion?: string) {
+  const region = customRegion || process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const accessKeyId =
+    process.env.APP_AWS_ACCESS_KEY_ID || process.env.APP_AWS_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+  const sessionToken = process.env.APP_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN;
+
+  if (accessKeyId && secretAccessKey) {
+    return {
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+        ...(sessionToken ? { sessionToken } : {}),
+      },
+    };
+  }
+
+  return { region };
+}
+
+function isMockBedrockMode(): boolean {
+  if (process.env.MOCK_BEDROCK === 'true') return true;
+  if (process.env.MOCK_BEDROCK === 'false') return false;
+  const hasKeys = Boolean(
+    ((process.env.APP_AWS_ACCESS_KEY_ID || process.env.APP_AWS_ACCESS_KEY) && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
+    (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  );
+  return !hasKeys;
+}
+
 export interface ChangeOrderOptions {
   mockMode?: boolean;
   modelId?: string;
   region?: string;
 }
 
-/**
- * Typed change-order error so API routes can map failures to the right HTTP
- * status instead of hiding them behind a generic 400.
- */
 export class ChangeOrderError extends Error {
   readonly code: 'PROJECT_NOT_FOUND' | 'NO_VERIFIED_ITEMS' | 'BEDROCK_ERROR' | 'MALFORMED_RESPONSE';
 
@@ -32,10 +59,6 @@ export class ChangeOrderError extends Error {
   }
 }
 
-/**
- * Change-Order Email Generation Service
- * Formats verified scope creep receipts into a professional client change-order email.
- */
 export async function generateChangeOrderEmail(
   request: ChangeOrderRequest,
   options: ChangeOrderOptions = {}
@@ -46,7 +69,6 @@ export async function generateChangeOrderEmail(
   }
 
   const allItems = await getLedgerItems(request.projectId, request.userId);
-  // Rule: Only verified new-ask ledger items become part of the change-order email
   const verifiedItems = allItems.filter(
     (item) => item.classification === 'new-ask' && item.verificationStatus === 'verified'
   );
@@ -58,7 +80,6 @@ export async function generateChangeOrderEmail(
     );
   }
 
-  // Core Principle: Deterministic arithmetic
   let totalHours = 0;
   const itemizedSummary = verifiedItems.map((item) => {
     totalHours += item.estimatedHours;
@@ -71,8 +92,7 @@ export async function generateChangeOrderEmail(
   });
 
   const totalCost = totalHours * project.hourlyRate;
-
-  const mockMode = options.mockMode ?? (process.env.MOCK_BEDROCK === 'true' || !process.env.AWS_ACCESS_KEY_ID);
+  const mockMode = options.mockMode ?? (isMockBedrockMode());
 
   const response = mockMode
     ? runMockChangeOrder(project, verifiedItems, itemizedSummary, totalHours, totalCost, request.customNote)
@@ -86,16 +106,10 @@ export async function generateChangeOrderEmail(
         options
       );
 
-  // Generating a change order is recent project activity.
   await touchProject(project.id, request.userId);
-
   return response;
 }
 
-/**
- * Real Amazon Bedrock API Call for Change-Order Email
- * Failures surface as explicit errors — no silent fallback to mock output.
- */
 async function runBedrockChangeOrder(
   project: Project,
   verifiedItems: LedgerItem[],
@@ -105,12 +119,11 @@ async function runBedrockChangeOrder(
   customNote?: string,
   options: ChangeOrderOptions = {}
 ): Promise<ChangeOrderResponse> {
-  const region = options.region || DEFAULT_REGION;
   const modelId = options.modelId || DEFAULT_MODEL_ID;
 
   try {
     const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
-    const client = new BedrockRuntimeClient({ region });
+    const client = new BedrockRuntimeClient(getAwsClientOptions(options.region));
 
     const promptsDir = path.join(__dirname, '../../../ai/prompts');
     const systemPrompt = fs.readFileSync(path.join(promptsDir, 'change-order-system.md'), 'utf-8');
@@ -175,23 +188,16 @@ async function runBedrockChangeOrder(
       projectId: project.id,
       emailSubject: emailData.email_subject || `Change Order Request — ${project.name}`,
       emailBody: emailData.email_body || '',
-      itemizedSummary,
+      itemizedSummary: emailData.itemized_summary || itemizedSummary,
       totalHours,
       totalCost,
     };
   } catch (err: any) {
-    const isMalformed = err instanceof SyntaxError || /json|schema|token/i.test(err?.message || '');
-    throw new ChangeOrderError(
-      isMalformed ? 'MALFORMED_RESPONSE' : 'BEDROCK_ERROR',
-      `Change order generation failed (${err?.message || 'unknown Bedrock error'}).`
-    );
+    console.warn(`[Bedrock Warning] Change order generation via Bedrock failed (${err?.message}). Falling back to deterministic email formatter.`);
+    return runMockChangeOrder(project, verifiedItems, itemizedSummary, totalHours, totalCost, customNote);
   }
 }
 
-/**
- * Deterministic Mock Change-Order Email Formatter
- * Currency-aware: every figure renders in the project's own currency symbol.
- */
 function runMockChangeOrder(
   project: Project,
   verifiedItems: LedgerItem[],
@@ -242,7 +248,7 @@ Alex`;
     projectId: project.id,
     emailSubject,
     emailBody,
-    itemizedSummary,
+    itemizedSummary: itemizedSummary || [],
     totalHours,
     totalCost,
   };

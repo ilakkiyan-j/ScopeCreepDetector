@@ -172,14 +172,17 @@ export const api = {
         userId ? `/api/projects?userId=${encodeURIComponent(userId)}` : '/api/projects'
       );
       if (data.projects && data.projects.length > 0) {
-        data.projects.forEach((p) => saveLocalProject(p));
+        data.projects.forEach((p) => {
+          (p as any).isLocalOnly = false;
+          saveLocalProject(p);
+        });
         return data;
       }
     } catch {
       /* network/container fallback */
     }
 
-    const localProjects = getLocalProjects();
+    const localProjects = getLocalProjects().map((p) => ({ ...p, isLocalOnly: true }));
     return { projects: localProjects };
   },
 
@@ -191,6 +194,7 @@ export const api = {
           : `/api/projects/${encodeURIComponent(projectId)}`
       );
       if (detail.project) {
+        (detail.project as any).isLocalOnly = false;
         saveLocalProject(detail.project);
         if (detail.ledgerItems) {
           saveLocalLedger(projectId, detail.ledgerItems);
@@ -203,6 +207,7 @@ export const api = {
 
     const localDetail = getLocalProjectDetail(projectId);
     if (localDetail) {
+      (localDetail.project as any).isLocalOnly = true;
       return localDetail;
     }
 
