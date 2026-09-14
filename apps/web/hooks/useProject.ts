@@ -2,18 +2,22 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Project, LedgerItem } from '@scope-creep-ledger/shared';
-import { api, ProjectDetail } from '@/lib/api';
-import { ApiError } from '@/lib/api';
+import { api, ProjectDetail, ApiError } from '@/lib/api';
+
+// Module-level in-memory cache to ensure instant UI rendering during section switching
+let cachedProjects: Project[] | null = null;
+const projectCacheMap = new Map<string, ProjectDetail>();
 
 export function useProjects(userId?: string) {
-  const [projects, setProjects] = useState<Project[] | null>(null);
+  const [projects, setProjects] = useState<Project[] | null>(cachedProjects);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setError(null);
     try {
       const data = await api.listProjects(userId);
+      cachedProjects = data.projects;
       setProjects(data.projects);
+      setError(null);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load projects.');
     }
@@ -26,30 +30,29 @@ export function useProjects(userId?: string) {
       load();
     };
 
-    window.addEventListener('focus', handleRevalidate);
     window.addEventListener('scope-creep-project-updated', handleRevalidate);
-    document.addEventListener('visibilitychange', handleRevalidate);
 
     return () => {
-      window.removeEventListener('focus', handleRevalidate);
       window.removeEventListener('scope-creep-project-updated', handleRevalidate);
-      document.removeEventListener('visibilitychange', handleRevalidate);
     };
   }, [load]);
 
-  return { projects, loading: projects === null, error, reload: load };
+  return { projects: projects || [], loading: projects === null && !error, error, reload: load };
 }
 
 export function useProject(projectId: string, userId?: string) {
-  const [data, setData] = useState<ProjectDetail | null>(null);
+  const cached = projectId ? projectCacheMap.get(projectId) || null : null;
+  const [data, setData] = useState<ProjectDetail | null>(cached);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setError(null);
-    setData(null);
     try {
       const detail = await api.getProject(projectId, userId);
+      if (projectId) {
+        projectCacheMap.set(projectId, detail);
+      }
       setData(detail);
+      setError(null);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load project.');
     }
@@ -63,13 +66,17 @@ export function useProject(projectId: string, userId?: string) {
     (itemId: string, patch: Partial<LedgerItem>) => {
       setData((prev) => {
         if (!prev) return prev;
-        return {
+        const updated = {
           ...prev,
           ledgerItems: prev.ledgerItems.map((it) => (it.id === itemId ? { ...it, ...patch } : it)),
         };
+        if (projectId) {
+          projectCacheMap.set(projectId, updated);
+        }
+        return updated;
       });
     },
-    []
+    [projectId]
   );
 
   return { ...data, loading: !data && !error, error, reload: load, updateItem };

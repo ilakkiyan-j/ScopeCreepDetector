@@ -5,7 +5,6 @@ import {
   FolderKanban,
   Sparkles,
   Activity,
-  UserCircle,
   Settings2,
 } from 'lucide-react';
 import { WorkspaceShell, ShellNavItem } from './WorkspaceShell';
@@ -15,8 +14,7 @@ const NAV: ShellNavItem[] = [
   { label: 'Projects', href: '/app/projects', icon: FolderKanban },
   { label: 'New Analysis', href: '/app/analysis/new', icon: Sparkles },
   { label: 'Activity', href: '/app/activity', icon: Activity },
-  { label: 'Profile', href: '/app/settings/profile', icon: UserCircle, section: 'Settings' },
-  { label: 'Preferences', href: '/app/settings/preferences', icon: Settings2 },
+  { label: 'Settings', href: '/app/settings/profile', icon: Settings2, section: 'Settings' },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
