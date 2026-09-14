@@ -35,12 +35,23 @@ function isMockMode(): boolean {
  * Persists project metadata to DynamoDB (or local mock store).
  * In mock mode the project is stored under the owning user's bucket.
  */
+/**
+ * Persists project metadata to DynamoDB (and local mock store).
+ */
 export async function saveProject(project: Project, userId?: string): Promise<void> {
   const ownerId = userId ?? project.userId ?? DEFAULT_USER_ID;
-  const incoming: Project = { ...project, userId: project.userId ?? (userId !== DEFAULT_USER_ID ? userId : undefined) };
+  const incoming: Project = {
+    ...project,
+    userId: project.userId ?? (userId !== DEFAULT_USER_ID ? userId : undefined),
+    updatedAt: project.updatedAt ?? project.createdAt ?? new Date().toISOString(),
+  };
+
+  // Always update local memory store for instant fallback & seamless cross-turn retrieval
+  mockProjectsStore.set(mockKey(ownerId, incoming.id), incoming);
+  mockProjectsStore.set(mockKey(DEFAULT_USER_ID, incoming.id), incoming);
+  mockProjectsStore.set(incoming.id, incoming);
 
   if (isMockMode()) {
-    mockProjectsStore.set(mockKey(ownerId, incoming.id), incoming);
     return;
   }
 
@@ -58,98 +69,111 @@ export async function saveProject(project: Project, userId?: string): Promise<vo
       })
     );
   } catch (err: any) {
-    console.warn(`[DynamoDB Warning] Failed to save project to DynamoDB (${err.message}). Using local store fallback.`);
-    mockProjectsStore.set(mockKey(ownerId, incoming.id), incoming);
+    console.warn(`[DynamoDB Warning] Failed to save project to DynamoDB (${err.message}). Local memory fallback preserved.`);
   }
 }
 
 /**
- * Retrieves project metadata by ID. When `userId` is provided the lookup is
- * scoped to that user's bucket; otherwise it falls back to a global lookup so
- * admin/aggregate flows keep working.
+ * Retrieves project metadata by ID.
+ * Merges DynamoDB lookup with local store fallback.
  */
 export async function getProject(projectId: string, userId?: string): Promise<Project | null> {
-  if (isMockMode()) {
-    if (userId) {
-      return mockProjectsStore.get(mockKey(userId, projectId)) || null;
+  let project: Project | null = null;
+
+  if (!isMockMode()) {
+    try {
+      const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+      const { DynamoDBDocumentClient, GetCommand } = await import('@aws-sdk/lib-dynamodb');
+
+      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const docClient = DynamoDBDocumentClient.from(client);
+
+      const result = await docClient.send(
+        new GetCommand({
+          TableName: PROJECTS_TABLE,
+          Key: { id: projectId },
+        })
+      );
+
+      const item = result.Item as Project;
+      if (item) {
+        if (!userId || !item.userId || item.userId === userId) {
+          project = item;
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[DynamoDB Warning] Failed to fetch project from DynamoDB (${err.message}). Using local store fallback.`);
     }
-    for (const project of mockProjectsStore.values()) {
-      if (project.id === projectId) return project;
-    }
-    return null;
   }
 
-  try {
-    const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
-    const { DynamoDBDocumentClient, GetCommand } = await import('@aws-sdk/lib-dynamodb');
-
-    const client = new DynamoDBClient({ region: DEFAULT_REGION });
-    const docClient = DynamoDBDocumentClient.from(client);
-
-    const result = await docClient.send(
-      new GetCommand({
-        TableName: PROJECTS_TABLE,
-        Key: { id: projectId },
-      })
-    );
-
-    const item = result.Item as Project;
-    if (item) {
-      if (userId && item.userId && item.userId !== userId) return null;
-      return item;
-    }
-    return null;
-  } catch (err: any) {
-    console.warn(`[DynamoDB Warning] Failed to fetch project from DynamoDB (${err.message}). Using local store fallback.`);
+  if (!project) {
     if (userId) {
-      return mockProjectsStore.get(mockKey(userId, projectId)) || null;
+      project = mockProjectsStore.get(mockKey(userId, projectId)) || null;
     }
-    for (const project of mockProjectsStore.values()) {
-      if (project.id === projectId) return project;
+    if (!project) {
+      project = mockProjectsStore.get(mockKey(DEFAULT_USER_ID, projectId)) || mockProjectsStore.get(projectId) || null;
     }
-    return null;
+    if (!project) {
+      for (const p of mockProjectsStore.values()) {
+        if (p.id === projectId) {
+          project = p;
+          break;
+        }
+      }
+    }
   }
+
+  return project;
 }
 
 /**
- * Lists projects, most recently active first. When `userId` is provided only
- * that user's projects are returned; otherwise every project is returned.
+ * Lists projects, most recently active first.
+ * Merges DynamoDB results with local store fallback so projects never disappear.
  */
 export async function listProjects(userId?: string): Promise<Project[]> {
-  if (isMockMode()) {
-    const projects = Array.from(mockProjectsStore.values()).filter(
-      (p) => !userId || mockProjectsStore.has(mockKey(userId, p.id))
-    );
-    return sortByRecent(projects);
+  const projectsMap = new Map<string, Project>();
+
+  if (!isMockMode()) {
+    try {
+      const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+      const { DynamoDBDocumentClient, ScanCommand } = await import('@aws-sdk/lib-dynamodb');
+
+      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const docClient = DynamoDBDocumentClient.from(client);
+
+      const result = await docClient.send(
+        new ScanCommand({
+          TableName: PROJECTS_TABLE,
+          ...(userId
+            ? {
+                FilterExpression: 'userId = :uid OR attribute_not_exists(userId)',
+                ExpressionAttributeValues: { ':uid': userId },
+              }
+            : {}),
+        })
+      );
+
+      const items = (result.Items as Project[]) || [];
+      for (const p of items) {
+        if (!userId || !p.userId || p.userId === userId || p.userId === DEFAULT_USER_ID) {
+          projectsMap.set(p.id, p);
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[DynamoDB Warning] Failed to scan projects (${err.message}). Using local store fallback.`);
+    }
   }
 
-  try {
-    const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
-    const { DynamoDBDocumentClient, ScanCommand } = await import('@aws-sdk/lib-dynamodb');
-
-    const client = new DynamoDBClient({ region: DEFAULT_REGION });
-    const docClient = DynamoDBDocumentClient.from(client);
-
-    const result = await docClient.send(
-      new ScanCommand({
-        TableName: PROJECTS_TABLE,
-        ...(userId
-          ? {
-              FilterExpression: 'userId = :uid',
-              ExpressionAttributeValues: { ':uid': userId },
-            }
-          : {}),
-      })
-    );
-
-    const projects = ((result.Items as Project[]) || []).filter((p) => !userId || !p.userId || p.userId === userId);
-    return sortByRecent(projects);
-  } catch (err: any) {
-    console.warn(`[DynamoDB Warning] Failed to scan projects (${err.message}). Using local store fallback.`);
-    return sortByRecent(
-      Array.from(mockProjectsStore.values()).filter((p) => !userId || mockProjectsStore.has(mockKey(userId, p.id)))
-    );
+  // Merge with local memory store
+  for (const p of mockProjectsStore.values()) {
+    if (!userId || !p.userId || p.userId === userId || p.userId === DEFAULT_USER_ID || p.userId === 'usr_demo_001') {
+      if (!projectsMap.has(p.id)) {
+        projectsMap.set(p.id, p);
+      }
+    }
   }
+
+  return sortByRecent(Array.from(projectsMap.values()));
 }
 
 function sortByRecent(projects: Project[]): Project[] {
@@ -160,7 +184,7 @@ function sortByRecent(projects: Project[]): Project[] {
 }
 
 /**
- * Persists batch of scope creep ledger items (scoped to the owner's bucket).
+ * Persists batch of scope creep ledger items.
  */
 export async function saveLedgerItems(items: LedgerItem[], userId?: string): Promise<void> {
   if (!items || items.length === 0) return;
@@ -168,14 +192,20 @@ export async function saveLedgerItems(items: LedgerItem[], userId?: string): Pro
   const projectId = items[0].projectId;
   const ownerId = userId ?? DEFAULT_USER_ID;
 
-  if (isMockMode()) {
-    const key = mockKey(ownerId, projectId);
+  const saveToMock = (keyUserId: string) => {
+    const key = mockKey(keyUserId, projectId);
     const existing = mockLedgerStore.get(key) || [];
-    // Deduplicate by item ID
     const mergedMap = new Map<string, LedgerItem>();
     existing.forEach((i) => mergedMap.set(i.id, i));
     items.forEach((i) => mergedMap.set(i.id, i));
     mockLedgerStore.set(key, Array.from(mergedMap.values()));
+  };
+
+  saveToMock(ownerId);
+  saveToMock(DEFAULT_USER_ID);
+  mockLedgerStore.set(projectId, items);
+
+  if (isMockMode()) {
     return;
   }
 
@@ -195,58 +225,58 @@ export async function saveLedgerItems(items: LedgerItem[], userId?: string): Pro
       );
     }
   } catch (err: any) {
-    console.warn(`[DynamoDB Warning] Failed to save ledger items to DynamoDB (${err.message}). Using local store fallback.`);
-    const key = mockKey(ownerId, projectId);
-    const existing = mockLedgerStore.get(key) || [];
-    const mergedMap = new Map<string, LedgerItem>();
-    existing.forEach((i) => mergedMap.set(i.id, i));
-    items.forEach((i) => mergedMap.set(i.id, i));
-    mockLedgerStore.set(key, Array.from(mergedMap.values()));
+    console.warn(`[DynamoDB Warning] Failed to save ledger items to DynamoDB (${err.message}). Local memory fallback preserved.`);
   }
 }
 
 /**
- * Retrieves all ledger items associated with a project ID (scoped by owner).
+ * Retrieves all ledger items associated with a project ID.
  */
 export async function getLedgerItems(projectId: string, userId?: string): Promise<LedgerItem[]> {
-  if (isMockMode()) {
-    if (userId) {
-      return mockLedgerStore.get(mockKey(userId, projectId)) || [];
+  let items: LedgerItem[] = [];
+
+  if (!isMockMode()) {
+    try {
+      const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+      const { DynamoDBDocumentClient, QueryCommand } = await import('@aws-sdk/lib-dynamodb');
+
+      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const docClient = DynamoDBDocumentClient.from(client);
+
+      const result = await docClient.send(
+        new QueryCommand({
+          TableName: LEDGER_TABLE,
+          KeyConditionExpression: 'projectId = :pid',
+          ExpressionAttributeValues: {
+            ':pid': projectId,
+          },
+        })
+      );
+
+      items = (result.Items as LedgerItem[]) || [];
+    } catch (err: any) {
+      console.warn(`[DynamoDB Warning] Failed to query ledger items from DynamoDB (${err.message}). Using local store fallback.`);
     }
-    for (const [key, items] of mockLedgerStore.entries()) {
-      if (key.endsWith(`::${projectId}`)) return items;
-    }
-    return [];
   }
 
-  try {
-    const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
-    const { DynamoDBDocumentClient, QueryCommand } = await import('@aws-sdk/lib-dynamodb');
-
-    const client = new DynamoDBClient({ region: DEFAULT_REGION });
-    const docClient = DynamoDBDocumentClient.from(client);
-
-    const result = await docClient.send(
-      new QueryCommand({
-        TableName: LEDGER_TABLE,
-        KeyConditionExpression: 'projectId = :pid',
-        ExpressionAttributeValues: {
-          ':pid': projectId,
-        },
-      })
-    );
-
-    return (result.Items as LedgerItem[]) || [];
-  } catch (err: any) {
-    console.warn(`[DynamoDB Warning] Failed to query ledger items from DynamoDB (${err.message}). Using local store fallback.`);
+  if (items.length === 0) {
     if (userId) {
-      return mockLedgerStore.get(mockKey(userId, projectId)) || [];
+      items = mockLedgerStore.get(mockKey(userId, projectId)) || [];
     }
-    for (const [key, items] of mockLedgerStore.entries()) {
-      if (key.endsWith(`::${projectId}`)) return items;
+    if (items.length === 0) {
+      items = mockLedgerStore.get(mockKey(DEFAULT_USER_ID, projectId)) || mockLedgerStore.get(projectId) || [];
     }
-    return [];
+    if (items.length === 0) {
+      for (const [key, list] of mockLedgerStore.entries()) {
+        if (key.endsWith(`::${projectId}`) || key === projectId) {
+          items = list;
+          break;
+        }
+      }
+    }
   }
+
+  return items;
 }
 
 /**
