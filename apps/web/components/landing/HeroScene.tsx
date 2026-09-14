@@ -80,7 +80,7 @@ export function HeroScene() {
       )}
 
       {/* Scrim: preserves hero-legibility over the scene */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/25 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/65 to-background" />
     </div>
   );
 }
