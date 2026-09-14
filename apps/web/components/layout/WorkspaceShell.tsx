@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info, CloudCheck } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info, Cloud } from 'lucide-react';
 import { ALXOGlyph } from '@/components/brand';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, Badge, DropdownMenu, DropdownMenuItem } from '@/components/ui';

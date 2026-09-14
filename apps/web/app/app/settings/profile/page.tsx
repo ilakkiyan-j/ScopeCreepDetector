@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { UserRound, Save, CloudCheck, Database, ShieldCheck } from 'lucide-react';
+import { UserRound, Save, Cloud, Database, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Label, Textarea, Badge } from '@/components/ui';
 
@@ -76,7 +76,7 @@ export default function ProfilePage() {
       <Card className="border-success/30 bg-success/5 backdrop-blur-sm">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <CloudCheck className="h-4 w-4 text-success" /> AWS Cloud Sync &amp; Health Status
+            <Cloud className="h-4 w-4 text-success" /> AWS Cloud Sync &amp; Health Status
           </CardTitle>
           <CardDescription className="text-xs">
             Real-time status of your AWS DynamoDB tables, S3 storage, and Bedrock AI engine.
