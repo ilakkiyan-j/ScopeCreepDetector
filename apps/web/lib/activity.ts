@@ -68,3 +68,10 @@ export function recordActivity(entry: Omit<ActivityEvent, 'id' | 'createdAt'>) {
 export function listActivity(): ActivityEvent[] {
   return read().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
+
+/** Purges activity log from localStorage. */
+export function clearActivity(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(KEY);
+  window.dispatchEvent(new CustomEvent('scope-creep-activity-updated'));
+}
