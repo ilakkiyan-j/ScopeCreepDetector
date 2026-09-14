@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Project, LedgerItem } from '@scope-creep-ledger/shared';
-import { api, ProjectDetail, ApiError } from '@/lib/api';
+import { api, ProjectDetail, ApiError, getLocalProjectDetail, getLocalProjects } from '@/lib/api';
 
 // Module-level in-memory cache to ensure instant UI rendering during section switching
 let cachedProjects: Project[] | null = null;
 const projectCacheMap = new Map<string, ProjectDetail>();
 
 export function useProjects(userId?: string) {
-  const [projects, setProjects] = useState<Project[] | null>(cachedProjects);
+  const [projects, setProjects] = useState<Project[] | null>(() => cachedProjects || getLocalProjects() || null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -19,7 +19,12 @@ export function useProjects(userId?: string) {
       setProjects(data.projects);
       setError(null);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Failed to load projects.');
+      const fallback = getLocalProjects();
+      if (fallback.length > 0) {
+        setProjects(fallback.map((p) => ({ ...p, isLocalOnly: true })));
+      } else {
+        setError(e instanceof ApiError ? e.message : 'Failed to load projects.');
+      }
     }
   }, [userId]);
 
@@ -41,8 +46,10 @@ export function useProjects(userId?: string) {
 }
 
 export function useProject(projectId: string, userId?: string) {
-  const cached = projectId ? projectCacheMap.get(projectId) || null : null;
-  const [data, setData] = useState<ProjectDetail | null>(cached);
+  const [data, setData] = useState<ProjectDetail | null>(() => {
+    if (!projectId) return null;
+    return projectCacheMap.get(projectId) || getLocalProjectDetail(projectId) || null;
+  });
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -54,7 +61,14 @@ export function useProject(projectId: string, userId?: string) {
       setData(detail);
       setError(null);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Failed to load project.');
+      const fallback = projectId ? getLocalProjectDetail(projectId) : null;
+      if (fallback) {
+        (fallback.project as any).isLocalOnly = true;
+        setData(fallback);
+        setError(null);
+      } else {
+        setError(e instanceof ApiError ? e.message : 'Failed to load project.');
+      }
     }
   }, [projectId, userId]);
 
