@@ -34,46 +34,47 @@ export function ProjectCard({
   const status = project.status ?? 'draft';
   return (
     <Link href={`/app/projects/${project.id}/overview`} className="block group">
-      <Card className="p-5 transition-shadow hover:shadow-card-hover">
+      <Card className="p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-card-hover hover:-translate-y-0.5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
               <FolderKanban className="h-4 w-4" />
             </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                 {project.name}
               </p>
               <p className="truncate text-xs text-muted-foreground">{project.clientName}</p>
             </div>
           </div>
-          <Badge variant={PROJECT_STATUS_TONE[status]}>{PROJECT_STATUS_LABEL[status]}</Badge>
+          <Badge variant={PROJECT_STATUS_TONE[status]} className="shrink-0">
+            {PROJECT_STATUS_LABEL[status]}
+          </Badge>
         </div>
 
-        {(typeof scopeChanges === 'number' ||
-          typeof totalHours === 'number') && (
-          <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+        {(typeof scopeChanges === 'number' || typeof totalHours === 'number') && (
+          <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {typeof scopeChanges === 'number' && (
               <span>
-                <strong className="text-foreground">{scopeChanges}</strong> scope changes
+                <strong className="font-semibold text-foreground">{scopeChanges}</strong> scope change{scopeChanges === 1 ? '' : 's'}
               </span>
             )}
             {typeof totalHours === 'number' && (
               <span>
-                <strong className="text-foreground">{totalHours}h</strong> additional
+                <strong className="font-semibold text-foreground">{totalHours}h</strong> additional
               </span>
             )}
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between gap-3 text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            Updated {timeAgo(project.updatedAt ?? project.createdAt)}
+        <div className="mt-4 flex items-center justify-between gap-2 pt-3 border-t border-border/40 text-xs">
+          <span className="flex items-center gap-1.5 text-muted-foreground min-w-0 truncate">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Updated {timeAgo(project.updatedAt ?? project.createdAt)}</span>
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 shrink-0">
             {typeof totalCost === 'number' && totalCost > 0 && (
-              <span className="font-semibold text-success">
+              <span className="font-bold text-success">
                 {formatMoney(totalCost, project.currency)}
               </span>
             )}
