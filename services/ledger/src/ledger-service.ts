@@ -123,10 +123,8 @@ export async function getProject(projectId: string, userId?: string): Promise<Pr
       );
 
       const item = result.Item as Project;
-      if (item) {
-        if (!userId || !item.userId || item.userId === userId) {
-          project = item;
-        }
+      if (item && item.id === projectId) {
+        project = item;
       }
     } catch (err: any) {
       console.warn(`[DynamoDB Warning] Failed to fetch project from DynamoDB (${err.message}). Using local store fallback.`);
@@ -176,17 +174,7 @@ export async function listProjects(userId?: string): Promise<Project[]> {
 
       const items = (result.Items as Project[]) || [];
       for (const p of items) {
-        if (
-          !userId ||
-          !p.userId ||
-          p.userId === userId ||
-          p.userId === DEFAULT_USER_ID ||
-          p.userId === 'usr_demo_001' ||
-          userId === DEFAULT_USER_ID ||
-          userId === 'usr_demo_001'
-        ) {
-          projectsMap.set(p.id, p);
-        }
+        projectsMap.set(p.id, p);
       }
     } catch (err: any) {
       console.warn(`[DynamoDB Warning] Failed to scan projects (${err.message}). Using local store fallback.`);
