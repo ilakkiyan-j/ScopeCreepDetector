@@ -9,7 +9,8 @@ const DEFAULT_BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10', 10);
 
 function getAwsClientOptions(customRegion?: string) {
   const region = customRegion || process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
-  const accessKeyId = process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const accessKeyId =
+    process.env.APP_AWS_ACCESS_KEY_ID || process.env.APP_AWS_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID;
   const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
   const sessionToken = process.env.APP_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN;
 
@@ -31,7 +32,7 @@ function isMockBedrockMode(): boolean {
   if (process.env.MOCK_BEDROCK === 'true') return true;
   if (process.env.MOCK_BEDROCK === 'false') return false;
   const hasKeys = Boolean(
-    (process.env.APP_AWS_ACCESS_KEY_ID && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
+    ((process.env.APP_AWS_ACCESS_KEY_ID || process.env.APP_AWS_ACCESS_KEY) && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   );
   return !hasKeys;
