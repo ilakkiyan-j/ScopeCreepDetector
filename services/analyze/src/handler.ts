@@ -4,7 +4,7 @@ import {
   ProjectAnalysis,
   LedgerItem,
   ClassificationCategory,
-} from '../../../shared/types';
+} from '@scope-creep-ledger/shared';
 import { parseConversation } from './parser';
 import { classifyMessages, ClassifyOptions } from './classifier';
 import { saveProject, saveLedgerItems } from '../../ledger/src/ledger-service';

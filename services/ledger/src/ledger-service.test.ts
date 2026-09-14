@@ -6,7 +6,7 @@ import {
   verifyLedgerItem,
   calculateProjectTotals,
 } from './ledger-service';
-import { Project, LedgerItem } from '../../../shared/types';
+import { Project, LedgerItem } from '@scope-creep-ledger/shared';
 
 async function runLedgerServiceTest() {
   console.log('--- Testing Scope Creep Ledger Persistence & Deterministic Math ---');

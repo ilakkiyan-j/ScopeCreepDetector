@@ -1,4 +1,4 @@
-import { ChatMessage } from '../../../shared/types';
+import { ChatMessage } from '@scope-creep-ledger/shared';
 
 /**
  * Regex Patterns for Common Chat Formats

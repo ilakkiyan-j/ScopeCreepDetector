@@ -3,9 +3,9 @@ import {
   ChangeOrderResponse,
   Project,
   LedgerItem,
-} from '../../../shared/types';
+} from '@scope-creep-ledger/shared';
 import { getProject, getLedgerItems, touchProject } from '../../ledger/src/ledger-service';
-import { formatMoney } from '../../../shared/currency';
+import { formatMoney } from '@scope-creep-ledger/shared';
 import * as fs from 'fs';
 import * as path from 'path';
 

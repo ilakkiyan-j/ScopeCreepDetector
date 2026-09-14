@@ -1,6 +1,6 @@
 import { generateChangeOrderEmail } from './change-order-service';
 import { saveProject, saveLedgerItems } from '../../ledger/src/ledger-service';
-import { Project, LedgerItem } from '../../../shared/types';
+import { Project, LedgerItem } from '@scope-creep-ledger/shared';
 
 async function runChangeOrderTest() {
   console.log('--- Testing Change-Order Email Generation Service ---');

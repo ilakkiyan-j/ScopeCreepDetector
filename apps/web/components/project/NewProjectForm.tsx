@@ -105,6 +105,10 @@ export function NewProjectForm() {
         message: `Analysis completed for "${projectName.trim() || 'Untitled Project'}"`,
       });
 
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('scope-creep-project-updated'));
+      }
+
       setResult({
         totalScopeCreepItems: response.summary.totalScopeCreepItems,
         totalEstimatedHours: response.summary.totalEstimatedHours,

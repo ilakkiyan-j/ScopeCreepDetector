@@ -31,11 +31,25 @@ interface Aggregate {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { projects, loading, error } = useProjects(user?.userId);
-  const [activity] = React.useState(() => listActivity().slice(0, 8));
+  const { projects, loading, error, reload } = useProjects(user?.userId);
+  const [activity, setActivity] = React.useState(() => listActivity().slice(0, 8));
 
   const [details, setDetails] = React.useState<Map<string, ProjectDetail> | null>(null);
   const [aggregate, setAggregate] = React.useState<Aggregate | null>(null);
+
+  React.useEffect(() => {
+    const handleActivityChange = () => {
+      setActivity(listActivity().slice(0, 8));
+    };
+
+    window.addEventListener('scope-creep-activity-updated', handleActivityChange);
+    window.addEventListener('storage', handleActivityChange);
+
+    return () => {
+      window.removeEventListener('scope-creep-activity-updated', handleActivityChange);
+      window.removeEventListener('storage', handleActivityChange);
+    };
+  }, []);
 
   React.useEffect(() => {
     let alive = true;

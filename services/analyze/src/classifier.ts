@@ -1,4 +1,4 @@
-import { ChatMessage, ClassificationResult, ClassificationCategory } from '../../../shared/types';
+import { ChatMessage, ClassificationResult, ClassificationCategory } from '@scope-creep-ledger/shared';
 import * as fs from 'fs';
 import * as path from 'path';
 

@@ -21,6 +21,20 @@ export function useProjects(userId?: string) {
 
   useEffect(() => {
     load();
+
+    const handleRevalidate = () => {
+      load();
+    };
+
+    window.addEventListener('focus', handleRevalidate);
+    window.addEventListener('scope-creep-project-updated', handleRevalidate);
+    document.addEventListener('visibilitychange', handleRevalidate);
+
+    return () => {
+      window.removeEventListener('focus', handleRevalidate);
+      window.removeEventListener('scope-creep-project-updated', handleRevalidate);
+      document.removeEventListener('visibilitychange', handleRevalidate);
+    };
   }, [load]);
 
   return { projects, loading: projects === null, error, reload: load };

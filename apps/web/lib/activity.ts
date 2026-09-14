@@ -50,6 +50,7 @@ export function recordActivity(entry: Omit<ActivityEvent, 'id' | 'createdAt'>) {
     ...events,
   ].slice(0, 50);
   localStorage.setItem(KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent('scope-creep-activity-updated'));
 }
 
 /** Events recorded this session (most recent first). */

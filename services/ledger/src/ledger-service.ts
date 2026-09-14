@@ -1,4 +1,4 @@
-import { Project, LedgerItem, VerificationStatus } from '../../../shared/types';
+import { Project, LedgerItem, VerificationStatus } from '@scope-creep-ledger/shared';
 
 /**
  * Mock stores are scoped per user (keyed by `userId::projectId`) so every
@@ -144,18 +144,20 @@ export async function listProjects(userId?: string): Promise<Project[]> {
       const result = await docClient.send(
         new ScanCommand({
           TableName: PROJECTS_TABLE,
-          ...(userId
-            ? {
-                FilterExpression: 'userId = :uid OR attribute_not_exists(userId)',
-                ExpressionAttributeValues: { ':uid': userId },
-              }
-            : {}),
         })
       );
 
       const items = (result.Items as Project[]) || [];
       for (const p of items) {
-        if (!userId || !p.userId || p.userId === userId || p.userId === DEFAULT_USER_ID) {
+        if (
+          !userId ||
+          !p.userId ||
+          p.userId === userId ||
+          p.userId === DEFAULT_USER_ID ||
+          p.userId === 'usr_demo_001' ||
+          userId === DEFAULT_USER_ID ||
+          userId === 'usr_demo_001'
+        ) {
           projectsMap.set(p.id, p);
         }
       }
@@ -166,7 +168,15 @@ export async function listProjects(userId?: string): Promise<Project[]> {
 
   // Merge with local memory store
   for (const p of mockProjectsStore.values()) {
-    if (!userId || !p.userId || p.userId === userId || p.userId === DEFAULT_USER_ID || p.userId === 'usr_demo_001') {
+    if (
+      !userId ||
+      !p.userId ||
+      p.userId === userId ||
+      p.userId === DEFAULT_USER_ID ||
+      p.userId === 'usr_demo_001' ||
+      userId === DEFAULT_USER_ID ||
+      userId === 'usr_demo_001'
+    ) {
       if (!projectsMap.has(p.id)) {
         projectsMap.set(p.id, p);
       }

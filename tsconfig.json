@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@scope-creep-ledger/shared": ["./shared/types/index.ts"]
+    },
     "lib": ["ES2022"],
     "types": ["node"],
     "strict": true,

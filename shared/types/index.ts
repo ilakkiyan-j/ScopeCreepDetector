@@ -195,3 +195,5 @@ export interface ChangeOrderResponse {
   totalHours: number;
   totalCost: number;
 }
+
+export * from '../currency';

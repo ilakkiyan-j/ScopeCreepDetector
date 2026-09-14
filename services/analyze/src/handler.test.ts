@@ -1,5 +1,5 @@
 import { handleAnalyzeRequest } from './handler';
-import { AnalyzeRequest } from '../../../shared/types';
+import { AnalyzeRequest } from '@scope-creep-ledger/shared';
 import * as fs from 'fs';
 import * as path from 'path';
 
