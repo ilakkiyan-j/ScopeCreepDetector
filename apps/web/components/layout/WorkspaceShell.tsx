@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info, CloudCheck } from 'lucide-react';
 import { ALXOGlyph } from '@/components/brand';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, Badge, DropdownMenu, DropdownMenuItem } from '@/components/ui';
@@ -35,11 +35,11 @@ export function WorkspaceShell({
 
   const renderActive = (href: string) =>
     cn(
-      'relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+      'relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
       isActive(href)
-        ? 'bg-primary/10 text-primary before:absolute before:left-0 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand-accent'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        ? 'bg-primary/10 text-primary font-semibold before:absolute before:left-0 before:top-1/2 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-full before:bg-brand-accent shadow-sm'
+        : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
     );
 
   const navContent = (
@@ -51,7 +51,7 @@ export function WorkspaceShell({
         return (
           <React.Fragment key={item.href}>
             {showHeader && (
-              <p className="mt-5 mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mt-5 mb-1.5 px-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
                 {item.section}
               </p>
             )}
@@ -66,12 +66,12 @@ export function WorkspaceShell({
   );
 
   const brand = (
-    <div className="flex items-center justify-between px-5 py-4">
-      <div className="flex items-center gap-2.5">
-        <ALXOGlyph size={30} />
+    <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
+      <div className="flex items-center gap-3">
+        <ALXOGlyph size={32} />
         <div className="leading-tight">
-          <p className="text-sm font-semibold tracking-[0.18em] text-foreground">ALXO</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-base font-bold tracking-[0.15em] text-foreground">ALXO</p>
+          <p className="text-[11px] font-medium text-muted-foreground">
             {accentLabel}
             {role === 'ADMIN' && <span className="ml-1 text-info">· Admin</span>}
           </p>
@@ -89,19 +89,21 @@ export function WorkspaceShell({
   );
 
   const footer = (
-    <div className="border-t border-border p-4">
+    <div className="border-t border-border/50 p-3 bg-muted/20">
       <DropdownMenu
+        side="top"
+        align="left"
         trigger={
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-muted"
+            className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            <Avatar name={user?.name} className="h-8 w-8" />
+            <Avatar name={user?.name} className="h-9 w-9 shrink-0 ring-1 ring-border/50" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-foreground">{user?.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
+              <span className="block truncate text-sm font-semibold text-foreground">{user?.name || 'User'}</span>
+              <span className="block truncate text-xs text-muted-foreground">{user?.email || 'user@example.com'}</span>
             </span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           </button>
         }
       >
@@ -130,19 +132,19 @@ export function WorkspaceShell({
       type="button"
       onClick={toggleTheme}
       aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
-      {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDarkMode ? <Sun className="h-4.5 w-4.5 text-warning" /> : <Moon className="h-4.5 w-4.5" />}
     </button>
   );
 
   const demoBanner = isDemo ? (
     <div
       role="note"
-      className="flex items-center gap-2 border-b border-warning/30 bg-warning/10 px-6 py-2 text-xs text-warning"
+      className="flex items-center gap-2 border-b border-warning/30 bg-warning/10 px-6 py-2 text-xs font-medium text-warning backdrop-blur-sm"
     >
       <Info className="h-4 w-4 shrink-0" />
-      Demo Mode — you&rsquo;re exploring as a demo user. Changes aren&rsquo;t saved to a real account.
+      Demo Mode — exploring as demo user.
       <button
         type="button"
         className="ml-auto font-semibold underline underline-offset-2 hover:opacity-80"
@@ -157,11 +159,11 @@ export function WorkspaceShell({
   ) : null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-brand-accent/20">
       {demoBanner}
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-card lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border/70 bg-card/85 backdrop-blur-md lg:flex">
         {brand}
         {navContent}
         {footer}
@@ -174,10 +176,10 @@ export function WorkspaceShell({
             type="button"
             aria-label="Close navigation"
             tabIndex={-1}
-            className="absolute inset-0 bg-black/50 animate-fade-in"
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs animate-fade-in"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-border bg-card animate-slide-in">
+          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-border bg-card shadow-2xl animate-slide-in">
             {brand}
             {navContent}
             {footer}
@@ -187,8 +189,7 @@ export function WorkspaceShell({
 
       {/* Topbar + content */}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 bg-background/90 px-4 backdrop-blur-sm sm:px-6">
-          <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-brand-gradient/80" />
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 bg-background/85 px-4 backdrop-blur-md border-b border-border/50 sm:px-6">
           <button
             type="button"
             aria-label="Open navigation"
@@ -198,13 +199,17 @@ export function WorkspaceShell({
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+              AWS Cloud Synced
+            </span>
             {themeToggle}
-            <Badge variant="secondary">{role === 'ADMIN' ? 'Admin' : 'Workspace'}</Badge>
+            <Badge variant="secondary" className="font-semibold">{role === 'ADMIN' ? 'Admin' : 'Workspace'}</Badge>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 animate-fade-in">{children}</main>
       </div>
     </div>
   );

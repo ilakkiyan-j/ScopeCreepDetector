@@ -7,10 +7,12 @@ export function DropdownMenu({
   trigger,
   children,
   align = 'right',
+  side = 'bottom',
 }: {
   trigger: React.ReactNode;
   children: React.ReactNode;
   align?: 'left' | 'right';
+  side?: 'top' | 'bottom';
 }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -59,14 +61,15 @@ export function DropdownMenu({
     : trigger;
 
   return (
-    <div ref={ref} className="relative inline-flex">
+    <div ref={ref} className="relative inline-flex w-full">
       {triggerWithProps}
       {open && (
         <div
           id={menuId}
           role="menu"
           className={cn(
-            'absolute z-40 mt-1 min-w-[10rem] rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-card animate-fade-in',
+            'absolute z-50 min-w-[12rem] rounded-xl border border-border/80 bg-popover/95 backdrop-blur-md p-1.5 text-popover-foreground shadow-2xl animate-fade-in',
+            side === 'top' ? 'bottom-full mb-2' : 'top-full mt-1',
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >
