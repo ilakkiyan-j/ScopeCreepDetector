@@ -44,13 +44,24 @@ function read(): ActivityEvent[] {
 
 export function recordActivity(entry: Omit<ActivityEvent, 'id' | 'createdAt'>) {
   if (typeof window === 'undefined') return;
+  const newEvent: ActivityEvent = {
+    ...entry,
+    id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    createdAt: new Date().toISOString(),
+  };
   const events = read();
-  const next: ActivityEvent[] = [
-    { ...entry, id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`, createdAt: new Date().toISOString() },
-    ...events,
-  ].slice(0, 50);
+  const next: ActivityEvent[] = [newEvent, ...events].slice(0, 50);
   localStorage.setItem(KEY, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent('scope-creep-activity-updated'));
+
+  // Asynchronously sync event to AWS DynamoDB
+  fetch('/api/activity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newEvent),
+  }).catch(() => {
+    /* fallback to local storage on offline/network errors */
+  });
 }
 
 /** Events recorded this session (most recent first). */

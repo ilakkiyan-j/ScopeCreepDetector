@@ -1,4 +1,4 @@
-import { Project, LedgerItem, VerificationStatus } from '@scope-creep-ledger/shared';
+import { Project, LedgerItem, VerificationStatus, ActivityEvent } from '@scope-creep-ledger/shared';
 
 /**
  * Mock stores are scoped per user (keyed by `userId::projectId`) so every
@@ -20,12 +20,17 @@ if (!g.__mockProjectsStore) {
 if (!g.__mockLedgerStore) {
   g.__mockLedgerStore = new Map<string, LedgerItem[]>();
 }
+if (!g.__mockActivityStore) {
+  g.__mockActivityStore = [];
+}
 const mockProjectsStore: Map<string, Project> = g.__mockProjectsStore;
 const mockLedgerStore: Map<string, LedgerItem[]> = g.__mockLedgerStore;
+const mockActivityStore: ActivityEvent[] = g.__mockActivityStore;
 
 const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const PROJECTS_TABLE = process.env.DYNAMODB_PROJECTS_TABLE || 'scope-creep-ledger-projects-dev';
 const LEDGER_TABLE = process.env.DYNAMODB_LEDGER_TABLE || 'scope-creep-ledger-items-dev';
+const ACTIVITY_TABLE = process.env.DYNAMODB_ACTIVITY_TABLE || 'scope-creep-ledger-activity-dev';
 
 function getAwsClientOptions() {
   const region = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
@@ -397,4 +402,71 @@ export async function calculateProjectTotals(
     reviewCount,
     rejectedCount,
   };
+}
+
+/**
+ * Persists an activity event to AWS DynamoDB (and local mock store).
+ */
+export async function saveActivity(event: ActivityEvent): Promise<void> {
+  mockActivityStore.unshift(event);
+  if (mockActivityStore.length > 50) mockActivityStore.pop();
+
+  if (isMockMode()) return;
+
+  try {
+    const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+    const { DynamoDBDocumentClient, PutCommand } = await import('@aws-sdk/lib-dynamodb');
+
+    const client = new DynamoDBClient(getAwsClientOptions());
+    const docClient = DynamoDBDocumentClient.from(client);
+
+    await docClient.send(
+      new PutCommand({
+        TableName: ACTIVITY_TABLE,
+        Item: event,
+      })
+    );
+  } catch (err: any) {
+    console.warn(`[DynamoDB Warning] Failed to save activity event (${err.message}).`);
+  }
+}
+
+/**
+ * Lists activity events from AWS DynamoDB (merged with local store).
+ */
+export async function listActivityEvents(): Promise<ActivityEvent[]> {
+  const eventsMap = new Map<string, ActivityEvent>();
+
+  if (!isMockMode()) {
+    try {
+      const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
+      const { DynamoDBDocumentClient, ScanCommand } = await import('@aws-sdk/lib-dynamodb');
+
+      const client = new DynamoDBClient(getAwsClientOptions());
+      const docClient = DynamoDBDocumentClient.from(client);
+
+      const result = await docClient.send(
+        new ScanCommand({
+          TableName: ACTIVITY_TABLE,
+        })
+      );
+
+      const items = (result.Items as ActivityEvent[]) || [];
+      for (const item of items) {
+        eventsMap.set(item.id, item);
+      }
+    } catch (err: any) {
+      console.warn(`[DynamoDB Warning] Failed to scan activity events (${err.message}).`);
+    }
+  }
+
+  for (const item of mockActivityStore) {
+    if (!eventsMap.has(item.id)) {
+      eventsMap.set(item.id, item);
+    }
+  }
+
+  return Array.from(eventsMap.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }

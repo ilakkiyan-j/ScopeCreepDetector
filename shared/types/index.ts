@@ -196,4 +196,20 @@ export interface ChangeOrderResponse {
   totalCost: number;
 }
 
+export type ActivityType =
+  | 'project_created'
+  | 'analysis_completed'
+  | 'item_verified'
+  | 'item_rejected'
+  | 'change_order_generated';
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityType;
+  projectId: string | null;
+  projectName: string | null;
+  message: string;
+  createdAt: string;
+}
+
 export * from '../currency';
