@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { listProjects } from '../../../../../services/ledger/src/ledger-service';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
   try {
-    const projects = await listProjects();
+    const userId = new URL(request.url).searchParams.get('userId') || undefined;
+    const projects = await listProjects(userId);
     return NextResponse.json({ projects });
   } catch (err: any) {
     console.error('API GET /api/projects Error:', err);

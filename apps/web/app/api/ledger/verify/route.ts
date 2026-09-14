@@ -20,10 +20,11 @@ export async function POST(request: Request) {
       body.projectId,
       body.ledgerItemId,
       body.action,
-      body.customEstimatedHours
+      body.customEstimatedHours,
+      body.userId
     );
 
-    const totals = await calculateProjectTotals(body.projectId);
+    const totals = await calculateProjectTotals(body.projectId, body.userId);
 
     return NextResponse.json({ totals });
   } catch (err: any) {

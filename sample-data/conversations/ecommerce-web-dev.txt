@@ -1,0 +1,16 @@
+[02/04/2026, 10:00:15] Client: Hi Rahul, excited to start the Nexus E-Commerce Storefront project!
+[02/04/2026, 10:05:00] Freelancer: Great to work with you! Confirming baseline scope: 4 pages (Home, Catalog, Product Detail, Contact), Razorpay integration, 1 revision round at ₹2,500/hr.
+[02/04/2026, 10:08:30] Client: Confirmed. Let's start with the Product Catalog layout.
+[05/04/2026, 14:20:10] Client: Hey Rahul, our management wants customers to earn loyalty points on purchases. Can you build a customer loyalty rewards portal?
+[05/04/2026, 14:35:00] Freelancer: That requires custom database schemas and user reward logic, which is outside our 4-page baseline scope.
+[08/04/2026, 11:00:00] Client: Is the Razorpay integration using standard checkout overlay?
+[08/04/2026, 11:05:00] Freelancer: Yes, standard hosted Razorpay modal is included.
+[10/04/2026, 16:45:00] Client: We also need live 2-way ERP inventory sync with our SAP warehouse backend so stock updates instantly.
+[10/04/2026, 17:00:15] Freelancer: Custom SAP ERP integration is complex middleware work beyond the baseline setup.
+[12/04/2026, 09:15:20] Client: We finished reviewing Revision 1 of the Product Detail page. Can we do a second revision round with grid layout variations?
+[12/04/2026, 09:30:00] Freelancer: I can note that down.
+[15/04/2026, 13:10:00] Client: Can you add a multi-currency auto-conversion dropdown supporting USD, EUR, and GBP at checkout?
+[18/04/2026, 10:00:00] Client: Are we on track for our weekly sync call tomorrow?
+[18/04/2026, 10:02:00] Freelancer: Yes, call is scheduled for 11 AM tomorrow.
+[20/04/2026, 15:30:00] Client: We need a third revision round on the Homepage hero banner and navigation styling.
+[22/04/2026, 11:45:00] Client: Can you also create a custom iOS/Android mobile app API auth endpoint for push notifications?

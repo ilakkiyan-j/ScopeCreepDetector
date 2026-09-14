@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { Receipt, Eye, EyeOff, LogIn, Zap, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Zap, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button, Input, Label } from '@/components/ui';
+import { ALXOGlyph } from '@/components/brand';
 
 function SignInForm() {
   const { signIn, signInDemo, isLoading } = useAuth();
@@ -48,9 +49,7 @@ function SignInForm() {
   return (
     <div className="glass-card w-full rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
       <div className="mb-6 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <Receipt className="h-5 w-5" />
-        </span>
+        <ALXOGlyph size={40} />
         <div>
           <h1 className="text-lg font-bold text-card-foreground">Welcome back</h1>
           <p className="text-sm text-muted-foreground">Sign in to your scope audit workspace</p>

@@ -1,5 +1,17 @@
 import { Project, LedgerItem, VerificationStatus } from '../../../shared/types';
 
+/**
+ * Mock stores are scoped per user (keyed by `userId::projectId`) so every
+ * account sees exactly its own projects and ledger. Callers omit `userId` for
+ * backward compatibility / global queries (admin, seeded fixtures, e2e), which
+ * resolve to the shared `__system` bucket.
+ */
+const DEFAULT_USER_ID = '__system';
+
+function mockKey(userId: string, projectId: string): string {
+  return `${userId}::${projectId}`;
+}
+
 // In-memory fallback stores for offline / mock testing (persisted on globalThis for dev server stability)
 const g = globalThis as any;
 if (!g.__mockProjectsStore) {
@@ -20,11 +32,15 @@ function isMockMode(): boolean {
 }
 
 /**
- * Persists project metadata to DynamoDB (or local mock store)
+ * Persists project metadata to DynamoDB (or local mock store).
+ * In mock mode the project is stored under the owning user's bucket.
  */
-export async function saveProject(project: Project): Promise<void> {
+export async function saveProject(project: Project, userId?: string): Promise<void> {
+  const ownerId = userId ?? project.userId ?? DEFAULT_USER_ID;
+  const incoming: Project = { ...project, userId: project.userId ?? (userId !== DEFAULT_USER_ID ? userId : undefined) };
+
   if (isMockMode()) {
-    mockProjectsStore.set(project.id, project);
+    mockProjectsStore.set(mockKey(ownerId, incoming.id), incoming);
     return;
   }
 
@@ -38,21 +54,29 @@ export async function saveProject(project: Project): Promise<void> {
     await docClient.send(
       new PutCommand({
         TableName: PROJECTS_TABLE,
-        Item: project,
+        Item: incoming,
       })
     );
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to save project to DynamoDB (${err.message}). Using local store fallback.`);
-    mockProjectsStore.set(project.id, project);
+    mockProjectsStore.set(mockKey(ownerId, incoming.id), incoming);
   }
 }
 
 /**
- * Retrieves project metadata by ID
+ * Retrieves project metadata by ID. When `userId` is provided the lookup is
+ * scoped to that user's bucket; otherwise it falls back to a global lookup so
+ * admin/aggregate flows keep working.
  */
-export async function getProject(projectId: string): Promise<Project | null> {
+export async function getProject(projectId: string, userId?: string): Promise<Project | null> {
   if (isMockMode()) {
-    return mockProjectsStore.get(projectId) || null;
+    if (userId) {
+      return mockProjectsStore.get(mockKey(userId, projectId)) || null;
+    }
+    for (const project of mockProjectsStore.values()) {
+      if (project.id === projectId) return project;
+    }
+    return null;
   }
 
   try {
@@ -69,21 +93,34 @@ export async function getProject(projectId: string): Promise<Project | null> {
       })
     );
 
-    return (result.Item as Project) || mockProjectsStore.get(projectId) || null;
+    const item = result.Item as Project;
+    if (item) {
+      if (userId && item.userId && item.userId !== userId) return null;
+      return item;
+    }
+    return null;
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to fetch project from DynamoDB (${err.message}). Using local store fallback.`);
-    return mockProjectsStore.get(projectId) || null;
+    if (userId) {
+      return mockProjectsStore.get(mockKey(userId, projectId)) || null;
+    }
+    for (const project of mockProjectsStore.values()) {
+      if (project.id === projectId) return project;
+    }
+    return null;
   }
 }
 
 /**
- * Lists all projects, most recently created first.
+ * Lists projects, most recently active first. When `userId` is provided only
+ * that user's projects are returned; otherwise every project is returned.
  */
-export async function listProjects(): Promise<Project[]> {
+export async function listProjects(userId?: string): Promise<Project[]> {
   if (isMockMode()) {
-    return Array.from(mockProjectsStore.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    const projects = Array.from(mockProjectsStore.values()).filter(
+      (p) => !userId || mockProjectsStore.has(mockKey(userId, p.id))
     );
+    return sortByRecent(projects);
   }
 
   try {
@@ -96,34 +133,49 @@ export async function listProjects(): Promise<Project[]> {
     const result = await docClient.send(
       new ScanCommand({
         TableName: PROJECTS_TABLE,
+        ...(userId
+          ? {
+              FilterExpression: 'userId = :uid',
+              ExpressionAttributeValues: { ':uid': userId },
+            }
+          : {}),
       })
     );
 
-    const projects = (result.Items as Project[]) || [];
-    return projects.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const projects = ((result.Items as Project[]) || []).filter((p) => !userId || !p.userId || p.userId === userId);
+    return sortByRecent(projects);
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to scan projects (${err.message}). Using local store fallback.`);
-    return Array.from(mockProjectsStore.values());
+    return sortByRecent(
+      Array.from(mockProjectsStore.values()).filter((p) => !userId || mockProjectsStore.has(mockKey(userId, p.id)))
+    );
   }
 }
 
+function sortByRecent(projects: Project[]): Project[] {
+  return projects.sort(
+    (a, b) =>
+      new Date(b.updatedAt ?? b.createdAt).getTime() - new Date(a.updatedAt ?? a.createdAt).getTime()
+  );
+}
+
 /**
- * Persists batch of scope creep ledger items
+ * Persists batch of scope creep ledger items (scoped to the owner's bucket).
  */
-export async function saveLedgerItems(items: LedgerItem[]): Promise<void> {
+export async function saveLedgerItems(items: LedgerItem[], userId?: string): Promise<void> {
   if (!items || items.length === 0) return;
 
   const projectId = items[0].projectId;
+  const ownerId = userId ?? DEFAULT_USER_ID;
 
   if (isMockMode()) {
-    const existing = mockLedgerStore.get(projectId) || [];
+    const key = mockKey(ownerId, projectId);
+    const existing = mockLedgerStore.get(key) || [];
     // Deduplicate by item ID
     const mergedMap = new Map<string, LedgerItem>();
     existing.forEach((i) => mergedMap.set(i.id, i));
     items.forEach((i) => mergedMap.set(i.id, i));
-    mockLedgerStore.set(projectId, Array.from(mergedMap.values()));
+    mockLedgerStore.set(key, Array.from(mergedMap.values()));
     return;
   }
 
@@ -144,20 +196,27 @@ export async function saveLedgerItems(items: LedgerItem[]): Promise<void> {
     }
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to save ledger items to DynamoDB (${err.message}). Using local store fallback.`);
-    const existing = mockLedgerStore.get(projectId) || [];
+    const key = mockKey(ownerId, projectId);
+    const existing = mockLedgerStore.get(key) || [];
     const mergedMap = new Map<string, LedgerItem>();
     existing.forEach((i) => mergedMap.set(i.id, i));
     items.forEach((i) => mergedMap.set(i.id, i));
-    mockLedgerStore.set(projectId, Array.from(mergedMap.values()));
+    mockLedgerStore.set(key, Array.from(mergedMap.values()));
   }
 }
 
 /**
- * Retrieves all ledger items associated with a project ID
+ * Retrieves all ledger items associated with a project ID (scoped by owner).
  */
-export async function getLedgerItems(projectId: string): Promise<LedgerItem[]> {
+export async function getLedgerItems(projectId: string, userId?: string): Promise<LedgerItem[]> {
   if (isMockMode()) {
-    return mockLedgerStore.get(projectId) || [];
+    if (userId) {
+      return mockLedgerStore.get(mockKey(userId, projectId)) || [];
+    }
+    for (const [key, items] of mockLedgerStore.entries()) {
+      if (key.endsWith(`::${projectId}`)) return items;
+    }
+    return [];
   }
 
   try {
@@ -177,11 +236,26 @@ export async function getLedgerItems(projectId: string): Promise<LedgerItem[]> {
       })
     );
 
-    return (result.Items as LedgerItem[]) || mockLedgerStore.get(projectId) || [];
+    return (result.Items as LedgerItem[]) || [];
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to query ledger items from DynamoDB (${err.message}). Using local store fallback.`);
-    return mockLedgerStore.get(projectId) || [];
+    if (userId) {
+      return mockLedgerStore.get(mockKey(userId, projectId)) || [];
+    }
+    for (const [key, items] of mockLedgerStore.entries()) {
+      if (key.endsWith(`::${projectId}`)) return items;
+    }
+    return [];
   }
+}
+
+/**
+ * Records recent activity on a project by bumping its `updatedAt` timestamp.
+ */
+export async function touchProject(projectId: string, userId?: string): Promise<void> {
+  const project = await getProject(projectId, userId);
+  if (!project) return;
+  await saveProject({ ...project, updatedAt: new Date().toISOString() }, userId);
 }
 
 /**
@@ -192,16 +266,17 @@ export async function verifyLedgerItem(
   projectId: string,
   ledgerItemId: string,
   action: 'verify' | 'reject',
-  customEstimatedHours?: number
+  customEstimatedHours?: number,
+  userId?: string
 ): Promise<LedgerItem> {
-  const items = await getLedgerItems(projectId);
+  const items = await getLedgerItems(projectId, userId);
   const targetItem = items.find((i) => i.id === ledgerItemId);
 
   if (!targetItem) {
     throw new Error(`Ledger item ${ledgerItemId} not found for project ${projectId}.`);
   }
 
-  const project = await getProject(projectId);
+  const project = await getProject(projectId, userId);
   const hourlyRate = project ? project.hourlyRate : 60;
 
   // Update item properties
@@ -216,7 +291,10 @@ export async function verifyLedgerItem(
   targetItem.estimatedCost = targetItem.estimatedHours * hourlyRate;
 
   // Save updated item back
-  await saveLedgerItems([targetItem]);
+  await saveLedgerItems([targetItem], userId);
+
+  // Verification is recent project activity
+  await touchProject(projectId, userId);
 
   return targetItem;
 }
@@ -224,15 +302,18 @@ export async function verifyLedgerItem(
 /**
  * Calculates authoritative running totals deterministically across verified ledger items
  */
-export async function calculateProjectTotals(projectId: string): Promise<{
+export async function calculateProjectTotals(
+  projectId: string,
+  userId?: string
+): Promise<{
   totalHours: number;
   totalCost: number;
   verifiedCount: number;
   reviewCount: number;
   rejectedCount: number;
 }> {
-  const items = await getLedgerItems(projectId);
-  const project = await getProject(projectId);
+  const items = await getLedgerItems(projectId, userId);
+  const project = await getProject(projectId, userId);
   const hourlyRate = project ? project.hourlyRate : 60;
 
   let totalHours = 0;

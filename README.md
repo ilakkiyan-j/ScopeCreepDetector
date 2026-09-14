@@ -1,8 +1,9 @@
-# 🧾 Scope Creep Ledger
+# ⚡ ALXO
 
-> **AI-Assisted Cumulative Scope-Drift Accounting & Change-Order Engine for Freelancers and Agencies**
+> **Catch the work hiding between the lines.**
+> AI-Assisted Cumulative Scope-Drift Accounting & Change-Order Engine for Freelancers and Agencies
 
-[![Scope Creep Ledger CI](https://github.com/ilakkiyan-j/ScopeCreepDetector/actions/workflows/ci.yml/badge.svg)](https://github.com/ilakkiyan-j/ScopeCreepDetector/actions/workflows/ci.yml)
+[![ALXO CI](https://github.com/ilakkiyan-j/ScopeCreepDetector/actions/workflows/ci.yml/badge.svg)](https://github.com/ilakkiyan-j/ScopeCreepDetector/actions/workflows/ci.yml)
 [![Live Deployment](https://img.shields.io/badge/AWS%20Amplify-Live%20App-00C7B7?style=flat&logo=awsamplify)](https://master.d2ctutlbtt1yhj.amplifyapp.com/)
 [![AWS Bedrock](https://img.shields.io/badge/Amazon%20Bedrock-Claude%203%20Haiku-FF9900?style=flat&logo=amazonaws)](https://aws.amazon.com/bedrock/)
 [![Playwright](https://img.shields.io/badge/Playwright-E2E%20Passed-2EAD33?style=flat&logo=playwright)](https://playwright.dev/)
@@ -25,7 +26,7 @@ Because freelancers lack a formal accounting system for communication logs, thes
 
 ## 💡 The Solution
 
-**Scope Creep Ledger** acts as an AI audit layer between client conversation exports (Slack, WhatsApp, Email, CSV logs) and original baseline project contracts.
+**ALXO** acts as an AI audit layer between client conversation exports (Slack, WhatsApp, Email, CSV logs) and original baseline project contracts.
 
 1. **AI Classification**: Evaluates every message against contract scope boundaries.
 2. **Deterministic Arithmetic**: Calculates unbilled hours and dollar value strictly in code (`hours × hourlyRate`)—NEVER allowing AI to invent price numbers.
@@ -119,7 +120,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Testing Suite
 
-Scope Creep Ledger includes a comprehensive automated test suite containing **13 verified tests** across unit, backend pipeline, and Playwright E2E integration specs.
+ALXO includes a comprehensive automated test suite containing **13 verified tests** across unit, backend pipeline, and Playwright E2E integration specs.
 
 ### Run All Tests (Backend + Playwright E2E)
 ```bash

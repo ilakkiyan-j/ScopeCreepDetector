@@ -55,6 +55,16 @@ module.exports = {
           DEFAULT: 'rgb(var(--info) / <alpha-value>)',
           foreground: 'rgb(var(--info-foreground) / <alpha-value>)',
         },
+        brand: {
+          accent: 'rgb(var(--brand-accent) / <alpha-value>)',
+          ink: 'rgb(var(--brand-ink) / <alpha-value>)',
+        },
+      },
+      backgroundImage: {
+        'brand-gradient':
+          'linear-gradient(135deg, rgb(var(--brand-ink)) 0%, rgb(var(--brand-accent)) 100%)',
+        'brand-radial':
+          'radial-gradient(60% 60% at 20% 10%, rgb(var(--brand-ink) / 0.14) 0%, transparent 70%)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
@@ -67,6 +77,7 @@ module.exports = {
       boxShadow: {
         card: '0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 0 rgb(0 0 0 / 0.06)',
         'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
+        glow: '0 0 0 1px rgb(var(--brand-accent) / 0.35), 0 8px 24px -8px rgb(var(--brand-accent) / 0.5)',
       },
       keyframes: {
         'fade-in': {

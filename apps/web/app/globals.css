@@ -5,12 +5,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /*
- * Scope Creep Ledger — Semantic theme tokens.
+ * ALXO — Semantic theme tokens.
  * All component styling MUST consume these tokens (or Tailwind's token
  * classes that reference them). Never hardcode theme hex values in components.
  *
  * Tokens are defined as raw RGB channel triplets so Tailwind's
  * `rgb(var(--token) / <alpha-value>)` can apply opacity modifiers.
+ *
+ * Brand: primary is the deep "ink" indigo (trust, precision). `--brand-accent`
+ * is the electric cyan used for the X motif and gradient moments — never for
+ * large surfaces or body text.
  */
 
 :root {
@@ -27,7 +31,7 @@
   --popover: 255 255 255;
   --popover-foreground: 15 23 42;
 
-  --primary: 37 99 235; /* blue-600 */
+  --primary: 67 56 202; /* ink indigo — #4338ca indigo-700 */
   --primary-foreground: 255 255 255;
 
   --secondary: 241 245 249; /* slate-100 */
@@ -36,12 +40,15 @@
   --muted: 241 245 249; /* slate-100 */
   --muted-foreground: 100 116 139; /* slate-500 */
 
-  --accent: 224 242 254; /* sky-100 */
-  --accent-foreground: 3 105 161; /* sky-700 */
+  --accent: 207 250 254; /* cyan-100 */
+  --accent-foreground: 14 116 144; /* cyan-800 */
 
   --border: 226 232 240; /* slate-200 */
   --input: 226 232 240;
-  --ring: 37 99 235; /* blue-600 */
+  --ring: 67 56 202; /* indigo-700 */
+
+  --brand-accent: 6 182 212; /* electric cyan — #06b6d4 cyan-500 */
+  --brand-ink: 67 56 202; /* #4338ca indigo-700 */
 
   --success: 5 150 105; /* emerald-600 */
   --success-foreground: 255 255 255;
@@ -55,16 +62,16 @@
 
 .dark {
   /* Dark */
-  --background: 15 23 42; /* #0f172a slate-900 */
+  --background: 11 17 32; /* #0b1120 slate-950 — deep ink backdrop */
   --foreground: 241 245 249; /* #f1f5f9 slate-100 */
 
-  --card: 30 41 59; /* slate-800 */
+  --card: 15 23 42; /* slate-900 */
   --card-foreground: 241 245 249;
 
-  --popover: 30 41 59;
+  --popover: 15 23 42;
   --popover-foreground: 241 245 249;
 
-  --primary: 59 130 246; /* blue-500 */
+  --primary: 124 92 248; /* vivid indigo — #7c5cf8 */
   --primary-foreground: 255 255 255;
 
   --secondary: 51 65 85; /* slate-700 */
@@ -73,12 +80,15 @@
   --muted: 51 65 85; /* slate-700 */
   --muted-foreground: 148 163 184; /* slate-400 */
 
-  --accent: 8 47 73; /* sky-950 */
-  --accent-foreground: 125 211 252; /* sky-300 */
+  --accent: 8 51 68; /* cyan-950 */
+  --accent-foreground: 103 232 249; /* cyan-300 */
 
-  --border: 51 65 85; /* slate-700 */
-  --input: 71 85 105; /* slate-600 */
-  --ring: 59 130 246; /* blue-500 */
+  --border: 30 41 59; /* slate-800 */
+  --input: 51 65 85; /* slate-700 */
+  --ring: 124 92 248; /* indigo-400 */
+
+  --brand-accent: 34 211 238; /* electric cyan — #22d3ee cyan-400 */
+  --brand-ink: 124 92 248; /* #7c5cf8 */
 
   --success: 16 185 129; /* emerald-500 */
   --success-foreground: 6 78 59; /* emerald-900 */

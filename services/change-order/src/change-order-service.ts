@@ -4,7 +4,8 @@ import {
   Project,
   LedgerItem,
 } from '../../../shared/types';
-import { getProject, getLedgerItems } from '../../ledger/src/ledger-service';
+import { getProject, getLedgerItems, touchProject } from '../../ledger/src/ledger-service';
+import { formatMoney } from '../../../shared/currency';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -18,6 +19,20 @@ export interface ChangeOrderOptions {
 }
 
 /**
+ * Typed change-order error so API routes can map failures to the right HTTP
+ * status instead of hiding them behind a generic 400.
+ */
+export class ChangeOrderError extends Error {
+  readonly code: 'PROJECT_NOT_FOUND' | 'NO_VERIFIED_ITEMS' | 'BEDROCK_ERROR' | 'MALFORMED_RESPONSE';
+
+  constructor(code: ChangeOrderError['code'], message: string) {
+    super(message);
+    this.name = 'ChangeOrderError';
+    this.code = code;
+  }
+}
+
+/**
  * Change-Order Email Generation Service
  * Formats verified scope creep receipts into a professional client change-order email.
  */
@@ -25,19 +40,22 @@ export async function generateChangeOrderEmail(
   request: ChangeOrderRequest,
   options: ChangeOrderOptions = {}
 ): Promise<ChangeOrderResponse> {
-  const project = await getProject(request.projectId);
+  const project = await getProject(request.projectId, request.userId);
   if (!project) {
-    throw new Error(`Project ${request.projectId} not found.`);
+    throw new ChangeOrderError('PROJECT_NOT_FOUND', `Project ${request.projectId} not found.`);
   }
 
-  const allItems = await getLedgerItems(request.projectId);
+  const allItems = await getLedgerItems(request.projectId, request.userId);
   // Rule: Only verified new-ask ledger items become part of the change-order email
   const verifiedItems = allItems.filter(
     (item) => item.classification === 'new-ask' && item.verificationStatus === 'verified'
   );
 
   if (verifiedItems.length === 0) {
-    throw new Error('No verified scope creep items exist for this project to generate a change order.');
+    throw new ChangeOrderError(
+      'NO_VERIFIED_ITEMS',
+      'No verified scope creep items exist for this project to generate a change order.'
+    );
   }
 
   // Core Principle: Deterministic arithmetic
@@ -56,28 +74,27 @@ export async function generateChangeOrderEmail(
 
   const mockMode = options.mockMode ?? (process.env.MOCK_BEDROCK === 'true' || !process.env.AWS_ACCESS_KEY_ID);
 
-  if (mockMode) {
-    return runMockChangeOrder(project, verifiedItems, itemizedSummary, totalHours, totalCost, request.customNote);
-  }
+  const response = mockMode
+    ? runMockChangeOrder(project, verifiedItems, itemizedSummary, totalHours, totalCost, request.customNote)
+    : await runBedrockChangeOrder(
+        project,
+        verifiedItems,
+        itemizedSummary,
+        totalHours,
+        totalCost,
+        request.customNote,
+        options
+      );
 
-  try {
-    return await runBedrockChangeOrder(
-      project,
-      verifiedItems,
-      itemizedSummary,
-      totalHours,
-      totalCost,
-      request.customNote,
-      options
-    );
-  } catch (err: any) {
-    console.warn(`[Bedrock Warning] Change Order Bedrock call failed (${err.message}). Using local deterministic email formatter.`);
-    return runMockChangeOrder(project, verifiedItems, itemizedSummary, totalHours, totalCost, request.customNote);
-  }
+  // Generating a change order is recent project activity.
+  await touchProject(project.id, request.userId);
+
+  return response;
 }
 
 /**
  * Real Amazon Bedrock API Call for Change-Order Email
+ * Failures surface as explicit errors — no silent fallback to mock output.
  */
 async function runBedrockChangeOrder(
   project: Project,
@@ -91,79 +108,89 @@ async function runBedrockChangeOrder(
   const region = options.region || DEFAULT_REGION;
   const modelId = options.modelId || DEFAULT_MODEL_ID;
 
-  const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
-  const client = new BedrockRuntimeClient({ region });
+  try {
+    const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
+    const client = new BedrockRuntimeClient({ region });
 
-  const promptsDir = path.join(__dirname, '../../../ai/prompts');
-  const systemPrompt = fs.readFileSync(path.join(promptsDir, 'change-order-system.md'), 'utf-8');
+    const promptsDir = path.join(__dirname, '../../../ai/prompts');
+    const systemPrompt = fs.readFileSync(path.join(promptsDir, 'change-order-system.md'), 'utf-8');
 
-  const userPayload = {
-    project_name: project.name,
-    client_name: project.clientName,
-    original_scope: project.originalScope,
-    hourly_rate: project.hourlyRate,
-    custom_note: customNote || null,
-    total_hours: totalHours,
-    total_cost: totalCost,
-    verified_items: verifiedItems.map((item) => ({
-      message_id: item.messageId,
-      timestamp: item.timestamp,
-      requester: item.requester,
-      quote: item.originalMessage,
-      estimated_hours: item.estimatedHours,
-      estimated_cost: item.estimatedCost,
-      reason: item.reason,
-    })),
-  };
+    const userPayload = {
+      project_name: project.name,
+      client_name: project.clientName,
+      original_scope: project.originalScope,
+      hourly_rate: project.hourlyRate,
+      currency: project.currency,
+      custom_note: customNote || null,
+      total_hours: totalHours,
+      total_cost_unit: project.currency,
+      verified_items: verifiedItems.map((item) => ({
+        message_id: item.messageId,
+        timestamp: item.timestamp,
+        requester: item.requester,
+        quote: item.originalMessage,
+        estimated_hours: item.estimatedHours,
+        estimated_cost: item.estimatedCost,
+        reason: item.reason,
+      })),
+    };
 
-  const payload = {
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 2500,
-    temperature: 0.2,
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Draft a professional change-order email using these verified receipts:\n${JSON.stringify(
-          userPayload,
-          null,
-          2
-        )}`,
-      },
-    ],
-  };
+    const payload = {
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 2500,
+      temperature: 0.2,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: `Draft a professional change-order email using these verified receipts:\n${JSON.stringify(
+            userPayload,
+            null,
+            2
+          )}`,
+        },
+      ],
+    };
 
-  const command = new InvokeModelCommand({
-    modelId,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify(payload),
-  });
+    const command = new InvokeModelCommand({
+      modelId,
+      contentType: 'application/json',
+      accept: 'application/json',
+      body: JSON.stringify(payload),
+    });
 
-  const response = await client.send(command);
-  const responseBodyText = new TextDecoder().decode(response.body);
-  const parsedResponse = JSON.parse(responseBodyText);
+    const response = await client.send(command);
+    const responseBodyText = new TextDecoder().decode(response.body);
+    const parsedResponse = JSON.parse(responseBodyText);
 
-  const rawJsonText = parsedResponse.content?.[0]?.text || '';
-  const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('Malformed AI response: Could not find JSON in Bedrock change-order output');
+    const rawJsonText = parsedResponse.content?.[0]?.text || '';
+    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Could not find JSON in Bedrock change-order output');
+    }
+
+    const emailData = JSON.parse(jsonMatch[0]);
+
+    return {
+      projectId: project.id,
+      emailSubject: emailData.email_subject || `Change Order Request — ${project.name}`,
+      emailBody: emailData.email_body || '',
+      itemizedSummary,
+      totalHours,
+      totalCost,
+    };
+  } catch (err: any) {
+    const isMalformed = err instanceof SyntaxError || /json|schema|token/i.test(err?.message || '');
+    throw new ChangeOrderError(
+      isMalformed ? 'MALFORMED_RESPONSE' : 'BEDROCK_ERROR',
+      `Change order generation failed (${err?.message || 'unknown Bedrock error'}).`
+    );
   }
-
-  const emailData = JSON.parse(jsonMatch[0]);
-
-  return {
-    projectId: project.id,
-    emailSubject: emailData.email_subject || `Change Order Request — ${project.name}`,
-    emailBody: emailData.email_body || '',
-    itemizedSummary,
-    totalHours,
-    totalCost,
-  };
 }
 
 /**
  * Deterministic Mock Change-Order Email Formatter
+ * Currency-aware: every figure renders in the project's own currency symbol.
  */
 function runMockChangeOrder(
   project: Project,
@@ -178,7 +205,10 @@ function runMockChangeOrder(
   const itemizedListText = verifiedItems
     .map(
       (item, idx) =>
-        `  ${idx + 1}. Request (${item.timestamp}): "${item.originalMessage}"\n     Estimated Effort: ${item.estimatedHours} hrs ($${item.estimatedCost})`
+        `  ${idx + 1}. Request (${item.timestamp}): "${item.originalMessage}"\n     Estimated Effort: ${item.estimatedHours} hrs (${formatMoney(
+          item.estimatedCost ?? 0,
+          project.currency
+        )})`
     )
     .join('\n\n');
 
@@ -197,7 +227,10 @@ ${itemizedListText}${noteSection}
 ---------------------------------------------------
 TOTAL ADDITIONAL SCOPE DETECTED:
 Total Additional Effort: ${totalHours} hours
-Total Estimated Cost: $${totalCost} (at $${project.hourlyRate}/hr)
+Total Estimated Cost: ${formatMoney(totalCost, project.currency)} (at ${formatMoney(
+    project.hourlyRate,
+    project.currency
+  )}/hr)
 ---------------------------------------------------
 
 To ensure we stay aligned and transparent, please review the above items. Once approved, I will incorporate these deliverables into our current project roadmap.

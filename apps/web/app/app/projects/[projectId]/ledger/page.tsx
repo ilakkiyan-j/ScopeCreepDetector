@@ -57,11 +57,12 @@ export default function LedgerPage() {
             Review Queue <Badge variant="warning">{reviewQueue.length}</Badge>
           </h2>
           <div className="space-y-3">
-            {reviewQueue.map((item) => (
+            {reviewQueue.map((item, idx) => (
               <LedgerItemCard
                 key={item.id}
                 item={item}
                 currency={project.currency}
+                serial={idx}
                 onVerify={verifyItem}
                 onReject={rejectItem}
               />
@@ -74,11 +75,12 @@ export default function LedgerPage() {
         <section>
           <h2 className="mb-3 text-sm font-semibold text-foreground">All flagged items</h2>
           <div className="space-y-3">
-            {rest.map((item) => (
+            {rest.map((item, idx) => (
               <LedgerItemCard
                 key={item.id}
                 item={item}
                 currency={project.currency}
+                serial={idx}
                 onVerify={verifyItem}
                 onReject={rejectItem}
               />

@@ -36,7 +36,7 @@ export function ProjectTabs({ basePath }: { basePath: string }) {
               'inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
               active
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
             )}
           >

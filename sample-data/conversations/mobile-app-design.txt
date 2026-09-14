@@ -1,0 +1,12 @@
+[01/04/2026, 09:30:00] Client: Hey Sarah! Excited to begin the Aura Pay fintech app UI/UX design.
+[01/04/2026, 09:35:10] Freelancer: Thanks! Confirming baseline: Figma designs for 5 screens (Onboarding, Dashboard, Send Money, History, Settings) in Light Mode with 1 revision round per screen at ₹1,800/hr.
+[01/04/2026, 09:40:00] Client: Looks good. Let me send the brand color palette.
+[04/04/2026, 11:15:00] Client: Can you design dark mode versions for all 5 core screens in addition to light mode?
+[04/04/2026, 11:30:00] Freelancer: Dark mode requires additional token mapping and contrast testing for all 5 screens.
+[07/04/2026, 15:00:00] Client: Does the Send Money screen include input field validation states?
+[07/04/2026, 15:05:00] Freelancer: Yes, error and success states are included in the baseline Figma components.
+[10/04/2026, 10:20:00] Client: We want all transaction success icons animated with interactive Lottie JSON micro-animations.
+[12/04/2026, 14:00:00] Client: We reviewed revision 1 of the Dashboard. Can we do a second revision round with horizontal card carousels?
+[12/04/2026, 14:15:00] Freelancer: Noted.
+[15/04/2026, 09:45:00] Client: Can you also design 3 App Store and Google Play promo screenshot marketing banners?
+[18/04/2026, 16:30:00] Client: Can we do a third revision round on the Onboarding flow slides?

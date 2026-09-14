@@ -1,0 +1,12 @@
+[03/04/2026, 11:00:00] Client: Hi Vikram, ready to launch our SaaS onboarding copy campaign!
+[03/04/2026, 11:10:00] Freelancer: Awesome! Confirming baseline: 3 landing pages (Homepage, Pricing, Features) + 5-part email welcome sequence, 1 revision round at ₹1,500/hr.
+[03/04/2026, 11:15:00] Client: Perfect, starting with the Homepage copy draft.
+[06/04/2026, 14:30:00] Client: Hey Vikram, can you also write 10 LinkedIn ad copy variations and headline hooks for our paid campaigns?
+[06/04/2026, 14:45:00] Freelancer: Paid social ad copy is outside our website and onboarding email scope.
+[09/04/2026, 10:00:00] Client: Are the email sequence subjects optimized for open rates?
+[09/04/2026, 10:05:00] Freelancer: Yes, A/B subject line options are included in the baseline deliverable.
+[11/04/2026, 16:15:00] Client: We need a 2,000-word SEO keyword article on "Cloud Data Security Best Practices" for launch day.
+[14/04/2026, 11:00:00] Client: We reviewed revision 1 of the Pricing page. Can we do a second revision round with different tier benefit messaging?
+[14/04/2026, 11:20:00] Freelancer: Understood.
+[17/04/2026, 15:00:00] Client: Can you write comprehensive developer API technical documentation for our portal?
+[20/04/2026, 10:30:00] Client: We want a third revision round on the email sequence tone.

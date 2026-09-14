@@ -29,7 +29,7 @@ export function useAdminProjectRows() {
         const { projects } = await api.listProjects();
         const enriched = await Promise.all(
           projects.map(async (project): Promise<ProjectRow> => {
-            const detail = await api.getProject(project.id).catch(() => null);
+            const detail = await api.getProject(project.id, project.userId).catch(() => null);
             return {
               project,
               totals: detail

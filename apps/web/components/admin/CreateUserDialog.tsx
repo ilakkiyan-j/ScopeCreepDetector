@@ -39,7 +39,7 @@ export function CreateUserDialog() {
     setCreated(false);
   };
 
-  const submit = () => {
+  const submit = async () => {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !name.trim()) {
       setError('Name and email are required.');
@@ -49,7 +49,7 @@ export function CreateUserDialog() {
       setError('Enter a valid email address.');
       return;
     }
-    createUser({
+    await createUser({
       email: trimmedEmail,
       name: name.trim(),
       profession: profession.trim(),
@@ -74,7 +74,7 @@ export function CreateUserDialog() {
           {created ? (
             <div className="space-y-4">
               <div role="status" className="rounded-lg border border-success/30 bg-success/10 p-4 text-sm text-success">
-                Account created. The user can now sign in with any password (mock auth).
+                Account created. The initial password is Welcome123! — the user should change it after their first sign-in.
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setOpen(false)}>Done</Button>
@@ -122,7 +122,7 @@ export function CreateUserDialog() {
               {error && <p role="alert" className="text-sm text-danger">{error}</p>}
               <Textarea
                 readOnly
-                value={'Password rule for MVP: any non-empty password. Production will use Cognito.'}
+                value={'Password rules for MVP: minimum 8 characters with uppercase, lowercase, and a number. New accounts start with the initial password Welcome123!. Production will use Cognito.'}
                 rows={2}
                 className="text-xs text-muted-foreground"
               />

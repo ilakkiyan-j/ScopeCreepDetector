@@ -16,9 +16,10 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   signInDemo: () => void;
   signOut: () => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (updates: Partial<UserProfile>) => void;
   updateCurrency: (currency: Currency) => void;
-  createUser: (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => void;
+  createUser: (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => Promise<void>;
   toggleUserStatus: (userId: string) => void;
 }
 
@@ -39,7 +40,7 @@ const ADMIN_PROFILE: UserProfile = {
   email: 'admin@scopecreep.io',
   name: 'Sara Chen',
   profession: 'System Administrator',
-  company: 'Scope Creep Ledger Team',
+  company: 'ALXO Team',
   role: 'ADMIN',
   createdAt: '2026-01-01T00:00:00Z',
   status: 'active',
@@ -76,7 +77,71 @@ const INITIAL_USERS: UserProfile[] = [
 const SESSION_KEY = 'scope_creep_session';
 const USERS_KEY = 'scope_creep_users';
 const THEME_KEY = 'scope_creep_theme';
+const CREDENTIALS_KEY = 'scope_creep_passwords';
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Initial password assigned to admin-created accounts (mock auth). */
+const DEFAULT_NEW_USER_PASSWORD = 'Welcome123!';
+
+/** Seeded credential passwords for the bundled demo/fixture accounts. */
+const SEED_CREDENTIALS: Record<string, string> = {
+  'demo@scopecreep.io': 'Demo123!',
+  'admin@scopecreep.io': 'Admin123!',
+  'jordan@designstudio.com': 'Jordan123!',
+  'taylor@wordsmith.co': 'Taylor123!',
+};
+
+const PASSWORD_SALT = 'scope-creep-mock::';
+
+/**
+ * Password policy shared by sign-in and password change.
+ * The mock store preserves this shape so the UX matches the real system.
+ */
+function passwordError(password: string): string | null {
+  if (password.length < 8) return 'Password must be at least 8 characters.';
+  if (!/[A-Z]/.test(password)) return 'Password must include an uppercase letter.';
+  if (!/[a-z]/.test(password)) return 'Password must include a lowercase letter.';
+  if (!/[0-9]/.test(password)) return 'Password must include a number.';
+  return null;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const data = new TextEncoder().encode(PASSWORD_SALT + password);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function readCredentials(): Record<string, string> | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(CREDENTIALS_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') return parsed as Record<string, string>;
+  } catch {
+    /* fall through */
+  }
+  return null;
+}
+
+function writeCredentials(creds: Record<string, string>) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CREDENTIALS_KEY, JSON.stringify(creds));
+}
+
+/** Seeds credential hashes on first ever sign-in attempt. */
+async function ensureCredentials(): Promise<Record<string, string>> {
+  const existing = readCredentials();
+  if (existing) return existing;
+  const seeded: Record<string, string> = {};
+  for (const [email, pw] of Object.entries(SEED_CREDENTIALS)) {
+    seeded[email] = await hashPassword(pw);
+  }
+  writeCredentials(seeded);
+  return seeded;
+}
 
 function buildSession(user: UserProfile, mode: SessionMode, now = Date.now()): AuthSession {
   return { user, mode, issuedAt: now, expiresAt: now + SESSION_TTL_MS };
@@ -94,10 +159,19 @@ function loadStoredSession(): AuthSession | null {
     if (parsed.mode === 'demo') {
       return buildSession(DEMO_USER_PROFILE, 'demo');
     }
-    if (parsed.user.email === ADMIN_PROFILE.email) {
+    if (parsed.user.email.toLowerCase() === ADMIN_PROFILE.email) {
       return buildSession(ADMIN_PROFILE, 'signed-in');
     }
-    return parsed;
+    // Any other signed-in session is re-derived from the canonical users store
+    // (role included), so a forged session with a different role/email is rejected.
+    const canonical = loadUsers().find((u) => u.email.toLowerCase() === parsed.user.email.toLowerCase());
+    if (!canonical) return null;
+    if (canonical.status === 'disabled') return null;
+    return buildSession(
+      { ...canonical, lastLoginAt: parsed.user.lastLoginAt ?? canonical.lastLoginAt },
+      'signed-in',
+      parsed.issuedAt
+    );
   } catch {
     return null;
   }
@@ -152,7 +226,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalized = email.trim().toLowerCase();
       const normalizedPassword = password.trim();
 
-      // Mock validation: seeded accounts accept any non-empty password.
       if (!normalized || !normalizedPassword) {
         return { ok: false, error: 'Enter your email and password to continue.' };
       }
@@ -166,6 +239,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       if (profile.status === 'disabled') {
         return { ok: false, error: 'This account is disabled. Contact your administrator.' };
+      }
+
+      // Real password matching: seeded accounts no longer accept any password.
+      const creds = await ensureCredentials();
+      const storedHash = creds[normalized];
+      const attemptHash = await hashPassword(normalizedPassword);
+      if (!storedHash || storedHash !== attemptHash) {
+        return {
+          ok: false,
+          error: 'That password does not match this account. If you forgot it, contact your administrator.',
+        };
       }
 
       const mode: SessionMode = 'signed-in';
@@ -206,18 +290,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile({ defaultCurrency: currency });
   };
 
-  const createUser = (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => {
+  const createUser = async (newUser: Omit<UserProfile, 'userId' | 'createdAt'>) => {
     const created: UserProfile = {
       ...newUser,
       userId: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
       defaultCurrency: newUser.defaultCurrency ?? 'INR',
     };
+    // Every new account starts with the documented initial password.
+    const creds = await ensureCredentials();
+    creds[created.email.toLowerCase()] = await hashPassword(DEFAULT_NEW_USER_PASSWORD);
+    writeCredentials(creds);
     setAllUsers((prev) => {
       const next = [...prev, created];
       persistUsers(next);
       return next;
     });
+  };
+
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ ok: boolean; error?: string }> => {
+    if (!user) return { ok: false, error: 'You must be signed in to change your password.' };
+    if (session?.mode === 'demo') {
+      return { ok: false, error: 'Demo accounts cannot change their password.' };
+    }
+    const email = user.email.toLowerCase();
+    const creds = await ensureCredentials();
+    const currentHash = await hashPassword(currentPassword);
+    if (!creds[email] || creds[email] !== currentHash) {
+      return { ok: false, error: 'Current password is incorrect.' };
+    }
+    const ruleError = passwordError(newPassword);
+    if (ruleError) return { ok: false, error: ruleError };
+    creds[email] = await hashPassword(newPassword);
+    writeCredentials(creds);
+    return { ok: true };
   };
 
   const toggleUserStatus = (userId: string) => {
@@ -280,6 +389,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signInDemo,
         signOut,
+        changePassword,
         updateProfile,
         updateCurrency,
         createUser,

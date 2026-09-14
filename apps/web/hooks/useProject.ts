@@ -5,19 +5,19 @@ import { Project, LedgerItem } from '@scope-creep-ledger/shared';
 import { api, ProjectDetail } from '@/lib/api';
 import { ApiError } from '@/lib/api';
 
-export function useProjects() {
+export function useProjects(userId?: string) {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.listProjects();
+      const data = await api.listProjects(userId);
       setProjects(data.projects);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load projects.');
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     load();
@@ -26,7 +26,7 @@ export function useProjects() {
   return { projects, loading: projects === null, error, reload: load };
 }
 
-export function useProject(projectId: string) {
+export function useProject(projectId: string, userId?: string) {
   const [data, setData] = useState<ProjectDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,12 +34,12 @@ export function useProject(projectId: string) {
     setError(null);
     setData(null);
     try {
-      const detail = await api.getProject(projectId);
+      const detail = await api.getProject(projectId, userId);
       setData(detail);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load project.');
     }
-  }, [projectId]);
+  }, [projectId, userId]);
 
   useEffect(() => {
     if (projectId) load();

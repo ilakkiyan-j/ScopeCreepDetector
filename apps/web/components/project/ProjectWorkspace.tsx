@@ -3,12 +3,13 @@
 import React, { createContext, useContext } from 'react';
 import { useProject } from '@/hooks/useProject';
 import { api, ProjectDetail } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { recordActivity } from '@/lib/activity';
 import { LoadingState } from '@/components/state/LoadingState';
 import { ProjectTabs } from '@/components/project/ProjectTabs';
 import { Badge, Button } from '@/components/ui';
 import { PROJECT_STATUS_LABEL } from '@/lib/api';
-import { ProjectStatus } from '@scope-creep-ledger/shared';
+import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
 import { LedgerItem, Project } from '@scope-creep-ledger/shared';
 
 type Detail = ProjectDetail;
@@ -33,14 +34,6 @@ export function useProjectWorkspace() {
   return ctx;
 }
 
-const STATUS_TONE: Record<ProjectStatus, 'success' | 'warning' | 'info' | 'secondary' | 'outline'> = {
-  draft: 'outline',
-  analyzed: 'success',
-  review: 'warning',
-  'change-orders': 'info',
-  closed: 'secondary',
-};
-
 export function ProjectProvider({
   projectId,
   children,
@@ -48,11 +41,18 @@ export function ProjectProvider({
   projectId: string;
   children: React.ReactNode;
 }) {
-  const { loading, error, reload, updateItem, ...detail } = useProject(projectId);
+  const { user } = useAuth();
+  const ownerId = user?.userId;
+  const { loading, error, reload, updateItem, ...detail } = useProject(projectId, ownerId);
 
   const verifyItem = async (itemId: string) => {
     const item = detail.ledgerItems?.find((i) => i.id === itemId);
-    const res = await api.verifyLedgerItem({ projectId, ledgerItemId: itemId, action: 'verify' });
+    const res = await api.verifyLedgerItem({
+      projectId,
+      ledgerItemId: itemId,
+      action: 'verify',
+      userId: ownerId,
+    });
     updateItem(itemId, { verificationStatus: 'verified' });
     reload();
     if (item) {
@@ -68,7 +68,12 @@ export function ProjectProvider({
 
   const rejectItem = async (itemId: string) => {
     const item = detail.ledgerItems?.find((i) => i.id === itemId);
-    await api.verifyLedgerItem({ projectId, ledgerItemId: itemId, action: 'reject' });
+    await api.verifyLedgerItem({
+      projectId,
+      ledgerItemId: itemId,
+      action: 'reject',
+      userId: ownerId,
+    });
     updateItem(itemId, { verificationStatus: 'rejected' });
     reload();
     if (item) {
@@ -120,12 +125,23 @@ export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{project?.name}</h1>
-                <p className="mt-0.5 text-sm text-muted-foreground">{project?.clientName}</p>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">{project?.name}</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {project?.clientName}
+                  {project?.updatedAt && (
+                    <span className="before:mx-1.5 before:content-['·']">
+                      Updated{' '}
+                      {new Date(project.updatedAt).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  )}
+                </p>
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <Badge variant="outline">{project?.currency}</Badge>
-                <Badge variant={STATUS_TONE[project?.status ?? 'draft']}>
+                <Badge variant={PROJECT_STATUS_TONE[project?.status ?? 'draft']}>
                   {PROJECT_STATUS_LABEL[project?.status ?? 'draft']}
                 </Badge>
               </div>

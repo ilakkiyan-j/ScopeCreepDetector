@@ -4,7 +4,7 @@ test.describe('Admin Console & User Management E2E', () => {
   test('should open the admin console for the admin account', async ({ page }) => {
     await page.goto('/sign-in');
     await page.getByLabel('Email').fill('admin@scopecreep.io');
-    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByLabel('Password', { exact: true }).fill('Admin123!');
     await page.getByRole('button', { name: /Sign In/i }).click();
 
     // ADMIN role is steered to the admin console
@@ -16,7 +16,7 @@ test.describe('Admin Console & User Management E2E', () => {
   test('should block a USER account from /admin', async ({ page }) => {
     await page.goto('/sign-in');
     await page.getByLabel('Email').fill('jordan@designstudio.com');
-    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByLabel('Password', { exact: true }).fill('Jordan123!');
     await page.getByRole('button', { name: /Sign In/i }).click();
     await expect(page).toHaveURL(/\/app\/dashboard/);
 
@@ -27,7 +27,7 @@ test.describe('Admin Console & User Management E2E', () => {
   test('should list users and add a new account from the admin console', async ({ page }) => {
     await page.goto('/sign-in');
     await page.getByLabel('Email').fill('admin@scopecreep.io');
-    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByLabel('Password', { exact: true }).fill('Admin123!');
     await page.getByRole('button', { name: /Sign In/i }).click();
     await expect(page).toHaveURL(/\/admin\/dashboard/);
 
@@ -50,7 +50,7 @@ test.describe('Admin Console & User Management E2E', () => {
   test('should render admin settings with deployment info', async ({ page }) => {
     await page.goto('/sign-in');
     await page.getByLabel('Email').fill('admin@scopecreep.io');
-    await page.getByLabel('Password', { exact: true }).fill('anything');
+    await page.getByLabel('Password', { exact: true }).fill('Admin123!');
     await page.getByRole('button', { name: /Sign In/i }).click();
 
     await page.goto('/admin/settings');

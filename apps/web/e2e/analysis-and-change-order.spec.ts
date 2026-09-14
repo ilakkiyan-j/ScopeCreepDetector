@@ -30,7 +30,7 @@ test.describe('Analysis → Ledger → Change Order E2E', () => {
     // Ledger: benchmark yields 6 verified items + deterministic totals
     await expect(page).toHaveURL(/\/ledger/);
     await expect(page.getByRole('heading', { name: 'Ledger' })).toBeVisible();
-    await expect(page.getByText('Verified value')).toBeVisible();
+    await expect(page.getByText('Verified value').first()).toBeVisible();
     await expect(page.getByText('$690.00')).toBeVisible();
     await expect(page.getByText('All flagged items')).toBeVisible();
     // Benchmark yields only verified items — the review queue section is absent.
@@ -45,7 +45,8 @@ test.describe('Analysis → Ledger → Change Order E2E', () => {
     await expect(page.getByRole('heading', { name: 'Change order email' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Itemized summary' })).toBeVisible();
     await expect(page.getByText('Total').last()).toBeVisible();
-    await expect(page.getByText('$690.00')).toBeVisible();
+    await expect(page.getByText('$690.00').first()).toBeVisible();
+    await expect(page.getByText('$690.00').last()).toBeVisible();
   });
 
   test('should open the projects list and navigate to a project overview', async ({ page }) => {

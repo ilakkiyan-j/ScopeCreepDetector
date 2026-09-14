@@ -120,10 +120,11 @@ export async function handleAnalyzeRequest(
     currency: request.currency || 'USD',
     status: 'analyzed' as const,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
-  await saveProject(project);
-  await saveLedgerItems(ledgerItems);
+  await saveProject(project, request.userId);
+  await saveLedgerItems(ledgerItems, request.userId);
 
   const summary: ProjectAnalysis = {
     projectId,

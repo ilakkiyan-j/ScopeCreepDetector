@@ -13,7 +13,7 @@ export default function PreferencesPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="max-w-xl">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5 text-primary" /> Theme
@@ -46,14 +46,14 @@ export default function PreferencesPage() {
         </CardContent>
       </Card>
 
-      <Card className="max-w-xl">
+      <Card>
         <CardHeader>
           <CardTitle>Currency</CardTitle>
           <CardDescription>
             New projects will default to this currency. Existing projects keep their original currency.
           </CardDescription>
         </CardHeader>
-        <CardContent className="max-w-sm">
+        <CardContent>
           <CurrencySelector
             value={(user.defaultCurrency ?? 'INR') as Currency}
             onChange={(v) => updateCurrency(v)}

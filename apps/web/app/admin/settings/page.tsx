@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Settings2, Server, ShieldCheck, KeyRound } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Table, TableBody, TableRow, TableHead, TableCell } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
+import { PageHeader } from '@/components/PageHeader';
 
 interface Info {
   mockMode: boolean;
@@ -27,10 +28,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Deployment configuration and workspace integrity.</p>
-      </div>
+      <PageHeader title="Settings" description="Deployment configuration and workspace integrity." />
 
       <Card>
         <CardHeader>

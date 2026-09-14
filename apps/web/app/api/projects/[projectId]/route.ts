@@ -6,20 +6,21 @@ import {
 } from '../../../../../../services/ledger/src/ledger-service';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { projectId: string } }
 ) {
   try {
     const { projectId } = params;
-    const project = await getProject(projectId);
+    const userId = new URL(request.url).searchParams.get('userId') || undefined;
+    const project = await getProject(projectId, userId);
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found.' }, { status: 404 });
     }
 
     const [ledgerItems, totals] = await Promise.all([
-      getLedgerItems(projectId),
-      calculateProjectTotals(projectId),
+      getLedgerItems(projectId, userId),
+      calculateProjectTotals(projectId, userId),
     ]);
 
     return NextResponse.json({ project, ledgerItems, totals });

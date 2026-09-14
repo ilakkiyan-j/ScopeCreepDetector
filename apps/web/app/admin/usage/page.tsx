@@ -10,6 +10,7 @@ import { ActivityTimeline } from '@/components/activity/ActivityTimeline';
 import { listActivity, ACTIVITY_LABEL } from '@/lib/activity';
 import { formatMoney } from '@/lib/currency';
 import { MessagesSquare } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function AdminUsagePage() {
   const { allUsers } = useAuth();
@@ -24,10 +25,7 @@ export default function AdminUsagePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Usage</h1>
-        <p className="text-sm text-muted-foreground">Operational metrics computed directly from stored ledger data.</p>
-      </div>
+      <PageHeader title="Usage" description="Operational metrics computed directly from stored ledger data." />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Analyses run" value={analyses.length} hint="Session-stored in-browser activity events" />

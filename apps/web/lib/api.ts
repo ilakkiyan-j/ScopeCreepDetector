@@ -68,10 +68,17 @@ export const api = {
   analyzeProject: (request: AnalyzeRequest) =>
     json<AnalyzeResponse>('/api/analyze', { method: 'POST', body: JSON.stringify(request) }),
 
-  listProjects: () => json<{ projects: Project[] }>('/api/projects'),
+  listProjects: (userId?: string) =>
+    json<{ projects: Project[] }>(
+      userId ? `/api/projects?userId=${encodeURIComponent(userId)}` : '/api/projects'
+    ),
 
-  getProject: (projectId: string) =>
-    json<ProjectDetail>(`/api/projects/${encodeURIComponent(projectId)}`),
+  getProject: (projectId: string, userId?: string) =>
+    json<ProjectDetail>(
+      userId
+        ? `/api/projects/${encodeURIComponent(projectId)}?userId=${encodeURIComponent(userId)}`
+        : `/api/projects/${encodeURIComponent(projectId)}`
+    ),
 
   verifyLedgerItem: (request: VerifyLedgerItemRequest) =>
     json<{ totals: ProjectDetail['totals'] }>('/api/ledger/verify', {

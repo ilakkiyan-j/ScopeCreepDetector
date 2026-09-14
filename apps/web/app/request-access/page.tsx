@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Receipt, ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Label } from '@/components/ui';
+import { ALXOGlyph } from '@/components/brand';
 
 export default function RequestAccessPage() {
   const [email, setEmail] = useState('');
@@ -20,18 +21,16 @@ export default function RequestAccessPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Receipt className="h-5 w-5" />
-          </span>
+          <ALXOGlyph size={40} />
           <div>
             <h1 className="text-lg font-bold text-foreground">Request Access</h1>
-            <p className="text-sm text-muted-foreground">Scope Creep Ledger</p>
+            <p className="text-sm text-muted-foreground">ALXO</p>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Get started with Scope Creep Ledger</CardTitle>
+            <CardTitle>Get started with ALXO</CardTitle>
             <CardDescription>
               Accounts are provisioned by an administrator. Let us know who you are and we&rsquo;ll
               reach out about setting up your workspace.

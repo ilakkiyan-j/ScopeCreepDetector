@@ -1,22 +1,13 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
 import { useAdminProjectRows, groupByCurrency } from '@/hooks/useAdminOverview';
 import { LoadingState } from '@/components/state/LoadingState';
 import { Badge, Card, CardContent, CardHeader, CardTitle, CardDescription, Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui';
 import { PROJECT_STATUS_LABEL } from '@/lib/api';
+import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
 import { formatMoney } from '@/lib/currency';
-import { ProjectStatus } from '@scope-creep-ledger/shared';
-
-const STATUS_TONE: Record<ProjectStatus, 'success' | 'warning' | 'info' | 'secondary' | 'outline'> = {
-  draft: 'outline',
-  analyzed: 'success',
-  review: 'warning',
-  'change-orders': 'info',
-  closed: 'secondary',
-};
+import { PageHeader } from '@/components/PageHeader';
 
 export default function AdminProjectsPage() {
   const { rows, loading, error } = useAdminProjectRows();
@@ -29,10 +20,7 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Projects</h1>
-        <p className="text-sm text-muted-foreground">{rows.length} analyzed projects across the platform.</p>
-      </div>
+      <PageHeader title="Projects" description={`${rows.length} analyzed projects across the platform.`} />
 
       {byCurrency.length > 0 && (
         <Card>
@@ -66,21 +54,18 @@ export default function AdminProjectsPage() {
               <TableHead className="text-right">Items</TableHead>
               <TableHead className="text-right">Hours</TableHead>
               <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">Open</TableHead>
+              <TableHead className="text-right">Review</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map(({ project, totals, itemCount }) => (
               <TableRow key={project.id}>
                 <TableCell>
-                  <Link href={`/app/projects/${project.id}/overview`} className="group flex items-center gap-2">
-                    {project.name}
-                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-info" />
-                  </Link>
+                  <span className="font-medium text-foreground">{project.name}</span>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{project.clientName}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_TONE[project.status ?? 'draft']}>
+                  <Badge variant={PROJECT_STATUS_TONE[project.status ?? 'draft']}>
                     {PROJECT_STATUS_LABEL[project.status ?? 'draft']}
                   </Badge>
                 </TableCell>

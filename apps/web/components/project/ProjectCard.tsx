@@ -1,19 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { FolderKanban, ArrowUpRight } from 'lucide-react';
-import { Project, ProjectStatus } from '@scope-creep-ledger/shared';
+import { FolderKanban, ArrowUpRight, Clock } from 'lucide-react';
+import { Project } from '@scope-creep-ledger/shared';
 import { Badge, Card } from '@/components/ui';
 import { PROJECT_STATUS_LABEL } from '@/lib/api';
+import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
 import { formatMoney } from '@/lib/currency';
-
-const STATUS_TONE: Record<ProjectStatus, 'success' | 'warning' | 'info' | 'secondary' | 'outline'> = {
-  draft: 'outline',
-  analyzed: 'success',
-  review: 'warning',
-  'change-orders': 'info',
-  closed: 'secondary',
-};
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -30,9 +23,13 @@ function timeAgo(iso: string): string {
 export function ProjectCard({
   project,
   totalCost,
+  totalHours,
+  scopeChanges,
 }: {
   project: Project;
   totalCost?: number;
+  totalHours?: number;
+  scopeChanges?: number;
 }) {
   const status = project.status ?? 'draft';
   return (
@@ -50,19 +47,38 @@ export function ProjectCard({
               <p className="truncate text-xs text-muted-foreground">{project.clientName}</p>
             </div>
           </div>
-          <Badge variant={STATUS_TONE[status]}>{PROJECT_STATUS_LABEL[status]}</Badge>
+          <Badge variant={PROJECT_STATUS_TONE[status]}>{PROJECT_STATUS_LABEL[status]}</Badge>
         </div>
+
+        {(typeof scopeChanges === 'number' ||
+          typeof totalHours === 'number') && (
+          <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+            {typeof scopeChanges === 'number' && (
+              <span>
+                <strong className="text-foreground">{scopeChanges}</strong> scope changes
+              </span>
+            )}
+            {typeof totalHours === 'number' && (
+              <span>
+                <strong className="text-foreground">{totalHours}h</strong> additional
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between gap-3 text-xs">
           <span className="flex items-center gap-1.5 text-muted-foreground">
-            <ArrowUpRight className="h-3.5 w-3.5" />
-            Updated {timeAgo(project.createdAt)}
+            <Clock className="h-3.5 w-3.5" />
+            Updated {timeAgo(project.updatedAt ?? project.createdAt)}
           </span>
-          {typeof totalCost === 'number' && totalCost > 0 && (
-            <span className="font-semibold text-success">
-              {formatMoney(totalCost, project.currency)}
-            </span>
-          )}
+          <span className="flex items-center gap-1.5">
+            {typeof totalCost === 'number' && totalCost > 0 && (
+              <span className="font-semibold text-success">
+                {formatMoney(totalCost, project.currency)}
+              </span>
+            )}
+            <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </span>
         </div>
       </Card>
     </Link>

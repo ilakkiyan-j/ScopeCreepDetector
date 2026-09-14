@@ -8,6 +8,7 @@ import { MetricCard } from '@/components/MetricCard';
 import { LoadingState } from '@/components/state/LoadingState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { formatMoney } from '@/lib/currency';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function AdminDashboardPage() {
   const { allUsers } = useAuth();
@@ -24,10 +25,10 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin Overview</h1>
-        <p className="text-sm text-muted-foreground">Real metrics from your ledger service. No fabricated KPI tiles.</p>
-      </div>
+      <PageHeader
+        title="Admin Overview"
+        description="Real metrics from your ledger service. No fabricated KPI tiles."
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Active users" value={activeUsers.length} hint={`${allUsers.length} total accounts`} icon={<Users className="h-4 w-4" />} />

@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Receipt as LogoIcon, Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info } from 'lucide-react';
+import { ALXOGlyph } from '@/components/brand';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, Badge, DropdownMenu, DropdownMenuItem } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -34,10 +35,10 @@ export function WorkspaceShell({
 
   const renderActive = (href: string) =>
     cn(
-      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+      'relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
       isActive(href)
-        ? 'bg-primary/10 text-primary'
+        ? 'bg-primary/10 text-primary before:absolute before:left-0 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand-accent'
         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
     );
 
@@ -67,11 +68,9 @@ export function WorkspaceShell({
   const brand = (
     <div className="flex items-center justify-between px-5 py-4">
       <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <LogoIcon className="h-4 w-4" />
-        </span>
+        <ALXOGlyph size={30} />
         <div className="leading-tight">
-          <p className="text-sm font-semibold text-foreground">Scope Creep Ledger</p>
+          <p className="text-sm font-semibold tracking-[0.18em] text-foreground">ALXO</p>
           <p className="text-[11px] text-muted-foreground">
             {accentLabel}
             {role === 'ADMIN' && <span className="ml-1 text-info">· Admin</span>}
@@ -188,7 +187,8 @@ export function WorkspaceShell({
 
       {/* Topbar + content */}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-sm sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 bg-background/90 px-4 backdrop-blur-sm sm:px-6">
+          <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-brand-gradient/80" />
           <button
             type="button"
             aria-label="Open navigation"

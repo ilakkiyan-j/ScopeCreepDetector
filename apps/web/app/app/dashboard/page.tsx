@@ -9,11 +9,12 @@ import { MetricCard } from '@/components/MetricCard';
 import { ProjectCard } from '@/components/project/ProjectCard';
 import { ActivityTimeline } from '@/components/activity/ActivityTimeline';
 import { LoadingState } from '@/components/state/LoadingState';
-import { Skeleton, EmptyState, Card, CardContent } from '@/components/ui';
-import { api } from '@/lib/api';
+import { Skeleton, EmptyState, Card, CardContent, Button } from '@/components/ui';
+import { api, ProjectDetail } from '@/lib/api';
 import { formatMoney } from '@/lib/currency';
 import { listActivity } from '@/lib/activity';
-import { Project, LedgerItem } from '@scope-creep-ledger/shared';
+import { Project, Currency } from '@scope-creep-ledger/shared';
+import { PageHeader } from '@/components/PageHeader';
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -22,55 +23,70 @@ function greeting(): string {
   return 'Good evening';
 }
 
+interface Aggregate {
+  items: number;
+  hours: number;
+  costByCurrency: Record<Currency, number>;
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { projects, loading, error } = useProjects();
+  const { projects, loading, error } = useProjects(user?.userId);
   const [activity] = React.useState(() => listActivity().slice(0, 8));
 
-  const verifiedTotal = React.useMemo(async () => {
-    let hours = 0;
-    let cost = 0;
-    let items = 0;
-    if (projects) {
-      for (const p of projects) {
-        const detail: { totals: { totalHours: number; totalCost: number }; ledgerItems: LedgerItem[] } | null =
-          await api.getProject(p.id).catch(() => null);
-        if (detail) {
-          hours += detail.totals.totalHours;
-          cost += detail.totals.totalCost;
-          items += (detail.ledgerItems ?? []).length;
-        }
-      }
-    }
-    return { hours, cost, items };
-  }, [projects]);
+  const [details, setDetails] = React.useState<Map<string, ProjectDetail> | null>(null);
+  const [aggregate, setAggregate] = React.useState<Aggregate | null>(null);
 
-  const [aggregate, setAggregate] = React.useState<{ hours: number; cost: number; items: number } | null>(null);
   React.useEffect(() => {
     let alive = true;
-    verifiedTotal.then((v) => alive && setAggregate(v));
+    setDetails(null);
+    setAggregate(null);
+    if (!projects || projects.length === 0) return;
+
+    // Single batched fetch — one round trip for every project's ledger + totals.
+    Promise.all(
+      projects.map((p) => api.getProject(p.id, user?.userId).catch(() => null))
+    ).then((results) => {
+      if (!alive) return;
+      const detailMap = new Map<string, ProjectDetail>();
+      let items = 0;
+      let hours = 0;
+      const costByCurrency: Record<Currency, number> = {} as Record<Currency, number>;
+      projects.forEach((p, i) => {
+        const detail = results[i];
+        if (!detail) return;
+        detailMap.set(p.id, detail);
+        items += (detail.ledgerItems ?? []).length;
+        hours += detail.totals.totalHours;
+        const c = detail.project.currency;
+        costByCurrency[c] = (costByCurrency[c] ?? 0) + detail.totals.totalCost;
+      });
+      setDetails(detailMap);
+      setAggregate({ items, hours, costByCurrency });
+    });
+
     return () => {
       alive = false;
     };
-  }, [verifiedTotal]);
+  }, [projects, user?.userId]);
 
-  const defaultCurrency = user?.defaultCurrency ?? 'INR';
   const recentProjects = (projects ?? []).slice(0, 4);
+
+  const valueTiles = Object.entries(aggregate?.costByCurrency ?? {}).filter(([, v]) => v > 0);
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{greeting()}, {user?.name?.split(' ')[0]}</h1>
-          <p className="text-sm text-muted-foreground">Here&rsquo;s the state of scope creep across your projects.</p>
-        </div>
-        <Link
-          href="/app/projects/new"
-          className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        >
-          <FolderPlus className="h-4 w-4" /> New Project
-        </Link>
-      </div>
+      <PageHeader
+        title={`${greeting()}, ${user?.name?.split(' ')[0]}`}
+        description="Catch the unbilled work hiding between the lines."
+        actions={
+          <Button asChild size="lg">
+            <Link href="/app/projects/new">
+              <FolderPlus className="h-4 w-4" /> New Project
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -88,13 +104,25 @@ export default function DashboardPage() {
         <MetricCard
           label="Additional hours"
           value={aggregate?.hours ?? 0}
-          hint="Verified + reviewed"
+          hint="Verified additional effort"
           icon={<Sparkles className="h-4 w-4" />}
         />
         <MetricCard
           label="Recoverable value"
-          value={aggregate ? formatMoney(aggregate.cost, defaultCurrency) : '—'}
-          hint={`Sum in ${defaultCurrency} — no FX conversion`}
+          value={
+            aggregate && valueTiles.length > 0 ? (
+              <span className="block space-y-1">
+                {valueTiles.map(([cur, cost]) => (
+                  <span key={cur} className="block whitespace-nowrap">
+                    {formatMoney(cost, cur as Currency)}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              '—'
+            )
+          }
+          hint="Each value stays in its original currency — no FX conversion"
           tone="success"
           icon={<TrendingUp className="h-4 w-4" />}
         />
@@ -124,14 +152,28 @@ export default function DashboardPage() {
                   icon={<FolderPlus className="h-6 w-6" />}
                   title="No projects yet"
                   description="Start by uploading a conversation export and comparing it against your original scope."
+                  action={
+                    <Button asChild size="sm">
+                      <Link href="/app/projects/new">Create your first project</Link>
+                    </Button>
+                  }
                 />
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {recentProjects.map((project) => (
-                <ProjectCard key={project.id} project={project as Project} />
-              ))}
+              {recentProjects.map((project) => {
+                const detail = details?.get(project.id);
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project as Project}
+                    totalCost={detail?.totals.totalCost ?? undefined}
+                    totalHours={detail?.totals.totalHours ?? undefined}
+                    scopeChanges={detail?.totals.verifiedCount ?? 0}
+                  />
+                );
+              })}
             </div>
           )}
         </section>

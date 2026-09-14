@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { FileText, Loader2, Copy, Check, Info } from 'lucide-react';
 import { useProjectWorkspace } from '@/components/project/ProjectWorkspace';
+import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { recordActivity } from '@/lib/activity';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Textarea, EmptyState } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Textarea, EmptyState, Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui';
 import { formatMoney } from '@/lib/currency';
 import { PageHeader } from '@/components/PageHeader';
 import { ChangeOrderResponse } from '@scope-creep-ledger/shared';
 
 export default function ChangeOrdersPage() {
   const { project, ledgerItems, verifyItem } = useProjectWorkspace();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<ChangeOrderResponse | null>(null);
@@ -23,7 +25,7 @@ export default function ChangeOrdersPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.generateChangeOrder({ projectId: project.id });
+      const res = await api.generateChangeOrder({ projectId: project.id, userId: user?.userId });
       setResponse(res);
       recordActivity({
         type: 'change_order_generated',
@@ -129,36 +131,36 @@ export default function ChangeOrdersPage() {
                 <CardHeader>
                   <CardTitle>Itemized summary</CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-x-auto p-0">
-                  <table className="w-full border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/40 text-left">
-                        <th className="px-4 py-2.5 font-medium text-muted-foreground">Item</th>
-                        <th className="px-4 py-2.5 font-medium text-muted-foreground">Date</th>
-                        <th className="px-4 py-2.5 text-right font-medium text-muted-foreground">Hours</th>
-                        <th className="px-4 py-2.5 text-right font-medium text-muted-foreground">Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40">
+                        <TableHead>Item</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Hours</TableHead>
+                        <TableHead className="text-right">Cost</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {response.itemizedSummary.map((row, i) => (
-                        <tr key={i} className="border-b border-border last:border-0">
-                          <td className="px-4 py-2.5 text-foreground">{row.title}</td>
-                          <td className="px-4 py-2.5 text-muted-foreground">{row.date}</td>
-                          <td className="px-4 py-2.5 text-right text-foreground">{row.hours}</td>
-                          <td className="px-4 py-2.5 text-right font-medium text-success">
+                        <TableRow key={i}>
+                          <TableCell className="text-foreground">{row.title}</TableCell>
+                          <TableCell className="text-muted-foreground">{row.date}</TableCell>
+                          <TableCell className="text-right text-foreground">{row.hours}</TableCell>
+                          <TableCell className="text-right font-medium text-success">
                             {formatMoney(row.cost, project.currency)}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                      <tr className="bg-muted/20 font-semibold">
-                        <td colSpan={2} className="px-4 py-2.5 text-right text-foreground">Total</td>
-                        <td className="px-4 py-2.5 text-right text-foreground">{response.totalHours}</td>
-                        <td className="px-4 py-2.5 text-right text-success">
+                      <TableRow className="bg-muted/20 font-semibold">
+                        <TableCell colSpan={2} className="text-right text-foreground">Total</TableCell>
+                        <TableCell className="text-right text-foreground">{response.totalHours}</TableCell>
+                        <TableCell className="text-right text-success">
                           {formatMoney(response.totalCost, project.currency)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </div>

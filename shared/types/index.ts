@@ -110,6 +110,8 @@ export interface Project {
   currency: Currency;
   status?: ProjectStatus;
   createdAt: string; // ISO string
+  /** ISO string — last activity (analysis, verification, change order). Falls back to createdAt. */
+  updatedAt?: string;
 }
 
 /** Authoritative Scope Creep Ledger Entry */
@@ -167,12 +169,16 @@ export interface VerifyLedgerItemRequest {
   ledgerItemId: string;
   action: 'verify' | 'reject';
   customEstimatedHours?: number; // Optional user override of hours
+  /** Owner of the project (mock auth identity for MVP attribution). */
+  userId?: string;
 }
 
 /** API Request: POST /change-order */
 export interface ChangeOrderRequest {
   projectId: string;
   customNote?: string;
+  /** Owner of the project (mock auth identity for MVP attribution). */
+  userId?: string;
 }
 
 /** API Response: POST /change-order */

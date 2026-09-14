@@ -3,9 +3,9 @@ import { AuthProvider } from '../context/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Scope Creep Ledger',
+  title: 'ALXO — Catch the work hiding between the lines',
   description:
-    'Stop doing extra work for free. Turn messy client conversations into an evidence-backed record of additional work, estimated impact, and actionable change orders.',
+    'Catch the work hiding between the lines. ALXO turns messy client conversations into an evidence-backed record of additional work, estimated impact, and actionable change orders.',
 };
 
 const THEME_INIT_SCRIPT = `
@@ -26,7 +26,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="antialiased selection:bg-blue-500 selection:text-white">
+      <body className="antialiased selection:bg-primary/25 selection:text-foreground">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

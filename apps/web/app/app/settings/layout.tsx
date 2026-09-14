@@ -3,23 +3,22 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserRound, SlidersHorizontal } from 'lucide-react';
+import { UserRound, SlidersHorizontal, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/PageHeader';
 
 const TABS = [
   { label: 'Profile', href: '/app/settings/profile', icon: UserRound },
   { label: 'Preferences', href: '/app/settings/preferences', icon: SlidersHorizontal },
+  { label: 'Security', href: '/app/settings/security', icon: ShieldCheck },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Your profile and app defaults.</p>
-      </div>
+    <div className="mx-auto w-full max-w-2xl space-y-6">
+      <PageHeader title="Settings" description="Your profile, defaults, and security." />
 
       <nav
         aria-label="Settings sections"

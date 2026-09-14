@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { ArrowLeft, FolderKanban } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useAdminProjectRows } from '@/hooks/useAdminOverview';
-import { Badge, Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { formatMoney } from '@/lib/currency';
 import { LoadingState } from '@/components/state/LoadingState';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function AdminUserDetailPage({ params }: { params: { userId: string } }) {
   const { allUsers } = useAuth();
@@ -36,18 +37,20 @@ export default function AdminUserDetailPage({ params }: { params: { userId: stri
         <ArrowLeft className="mr-1 inline h-4 w-4" /> Back to users
       </Link>
 
+      <PageHeader
+        title={user.name}
+        description={user.email}
+        actions={
+          <div className="flex gap-2">
+            <Badge variant={user.role === 'ADMIN' ? 'info' : 'secondary'}>{user.role}</Badge>
+            <Badge variant={statusTone}>{user.status}</Badge>
+          </div>
+        }
+      />
+
       <Card>
         <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="text-xl">{user.name}</CardTitle>
-              <CardDescription>{user.email}</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Badge variant={user.role === 'ADMIN' ? 'info' : 'secondary'}>{user.role}</Badge>
-              <Badge variant={statusTone}>{user.status}</Badge>
-            </div>
-          </div>
+          <CardTitle>Account details</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">

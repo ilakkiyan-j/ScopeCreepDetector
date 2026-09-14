@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Receipt,
   LogIn,
   Zap,
   Moon,
@@ -20,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui';
+import { ALXOLogo } from '@/components/brand';
+import { HeroScene } from '@/components/landing/HeroScene';
 
 const STEPS = [
   {
@@ -72,10 +73,7 @@ function PublicNavbar({ isDark, onToggle }: { isDark: boolean; onToggle: () => v
     <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Receipt className="h-4 w-4" />
-          </span>
-          <span className="text-sm font-semibold text-foreground">Scope Creep Ledger</span>
+          <ALXOLogo size={28} />
         </Link>
 
         <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Primary">
@@ -110,13 +108,13 @@ function PublicNavbar({ isDark, onToggle }: { isDark: boolean; onToggle: () => v
 }
 
 function DemoButton({ variant }: { variant: 'navbar' | 'hero' | 'cta' }) {
-  const { signInDemo, isAuthenticated } = useAuth();
+  const { signInDemo } = useAuth();
   const router = useRouter();
 
   const goDemo = () => {
-    if (!isAuthenticated) {
-      signInDemo();
-    }
+    // Always switch to the isolated demo session — even when another account
+    // is signed in — so the demo never runs under a real (or admin) identity.
+    signInDemo();
     router.push('/app/dashboard');
   };
 
@@ -168,7 +166,8 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative px-4 pt-16 sm:px-6 lg:px-8 lg:pt-24">
-        <div className="mx-auto max-w-4xl text-center">
+        <HeroScene />
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-info/30 bg-info/10 px-3 py-1 text-xs font-medium text-info">
             <ShieldCheck className="h-3.5 w-3.5" /> Evidence-backed scope accounting
           </p>
@@ -176,7 +175,7 @@ export default function LandingPage() {
             Stop doing extra work for free.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Scope Creep Ledger turns messy client conversations into an evidence-backed record of
+            ALXO turns messy client conversations into an evidence-backed record of
             additional work, estimated impact, and actionable change orders.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -206,7 +205,7 @@ export default function LandingPage() {
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-4.5 w-4.5" />
+                    <Icon className="h-4 w-4" />
                   </span>
                   <span className="text-xs font-semibold text-muted-foreground">
                     Step {idx + 1}
@@ -232,7 +231,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-between gap-3 border-b border-border pb-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">Acme Website</p>
-                <p className="text-xs text-muted-foreground">Scope creep ledger</p>
+                <p className="text-xs text-muted-foreground">ALXO ledger</p>
               </div>
               <span className="rounded-md bg-success/15 px-2 py-1 text-xs font-medium text-success">
                 6 items · 11.5 additional hours
@@ -267,7 +266,7 @@ export default function LandingPage() {
             return (
               <div key={idx} className="rounded-xl border border-border bg-card p-6 shadow-sm">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="h-4.5 w-4.5" />
+                  <Icon className="h-4 w-4" />
                 </span>
                 <h3 className="mt-4 text-base font-semibold text-foreground">{feat.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feat.body}</p>
@@ -283,7 +282,7 @@ export default function LandingPage() {
           <h2 className="text-2xl font-bold text-foreground">Why it matters</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Scope creep rarely shows up in an invoice — it shows up as late nights, resentful
-            projects, and revenue you can&rsquo;t articulate. Scope Creep Ledger turns that invisible
+            projects, and revenue you can&rsquo;t articulate. ALXO turns that invisible
             work into a clear, evidence-backed number you can act on.
           </p>
           <ul className="mx-auto mt-6 flex max-w-md flex-col gap-2 text-left">
@@ -321,7 +320,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        <p>Scope Creep Ledger · Evidence-backed scope accounting for freelancers and agencies.</p>
+        <p>ALXO · Catch the work hiding between the lines.</p>
       </footer>
     </div>
   );

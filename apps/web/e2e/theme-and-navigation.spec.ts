@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Workspace Navigation & Theme E2E', () => {
   test('should render the app shell brand and primary navigation', async ({ page }) => {
-    await expect(page.getByText('Scope Creep Ledger')).toBeVisible();
+    await expect(page.getByText('ALXO', { exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Projects' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'New Analysis' })).toBeVisible();
