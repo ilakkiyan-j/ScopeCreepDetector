@@ -27,8 +27,34 @@ const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || '
 const PROJECTS_TABLE = process.env.DYNAMODB_PROJECTS_TABLE || 'scope-creep-ledger-projects-dev';
 const LEDGER_TABLE = process.env.DYNAMODB_LEDGER_TABLE || 'scope-creep-ledger-items-dev';
 
+function getAwsClientOptions() {
+  const region = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const accessKeyId = process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+  const sessionToken = process.env.APP_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN;
+
+  if (accessKeyId && secretAccessKey) {
+    return {
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+        ...(sessionToken ? { sessionToken } : {}),
+      },
+    };
+  }
+
+  return { region };
+}
+
 function isMockMode(): boolean {
-  return process.env.MOCK_DYNAMODB === 'true' || !process.env.AWS_ACCESS_KEY_ID;
+  if (process.env.MOCK_DYNAMODB === 'true') return true;
+  if (process.env.MOCK_DYNAMODB === 'false') return false;
+  const hasKeys = Boolean(
+    (process.env.APP_AWS_ACCESS_KEY_ID && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
+    (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  );
+  return !hasKeys;
 }
 
 /**
@@ -59,7 +85,7 @@ export async function saveProject(project: Project, userId?: string): Promise<vo
     const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
     const { DynamoDBDocumentClient, PutCommand } = await import('@aws-sdk/lib-dynamodb');
 
-    const client = new DynamoDBClient({ region: DEFAULT_REGION });
+    const client = new DynamoDBClient(getAwsClientOptions());
     const docClient = DynamoDBDocumentClient.from(client);
 
     await docClient.send(
@@ -85,7 +111,7 @@ export async function getProject(projectId: string, userId?: string): Promise<Pr
       const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
       const { DynamoDBDocumentClient, GetCommand } = await import('@aws-sdk/lib-dynamodb');
 
-      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
       const result = await docClient.send(
@@ -138,7 +164,7 @@ export async function listProjects(userId?: string): Promise<Project[]> {
       const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
       const { DynamoDBDocumentClient, ScanCommand } = await import('@aws-sdk/lib-dynamodb');
 
-      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
       const result = await docClient.send(
@@ -223,7 +249,7 @@ export async function saveLedgerItems(items: LedgerItem[], userId?: string): Pro
     const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
     const { DynamoDBDocumentClient, PutCommand } = await import('@aws-sdk/lib-dynamodb');
 
-    const client = new DynamoDBClient({ region: DEFAULT_REGION });
+    const client = new DynamoDBClient(getAwsClientOptions());
     const docClient = DynamoDBDocumentClient.from(client);
 
     for (const item of items) {
@@ -250,7 +276,7 @@ export async function getLedgerItems(projectId: string, userId?: string): Promis
       const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
       const { DynamoDBDocumentClient, QueryCommand } = await import('@aws-sdk/lib-dynamodb');
 
-      const client = new DynamoDBClient({ region: DEFAULT_REGION });
+      const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
       const result = await docClient.send(

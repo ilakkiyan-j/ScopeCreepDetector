@@ -7,6 +7,36 @@ const DEFAULT_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-hai
 const DEFAULT_CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || '0.70');
 const DEFAULT_BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10', 10);
 
+function getAwsClientOptions(customRegion?: string) {
+  const region = customRegion || process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const accessKeyId = process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+  const sessionToken = process.env.APP_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN;
+
+  if (accessKeyId && secretAccessKey) {
+    return {
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+        ...(sessionToken ? { sessionToken } : {}),
+      },
+    };
+  }
+
+  return { region };
+}
+
+function isMockBedrockMode(): boolean {
+  if (process.env.MOCK_BEDROCK === 'true') return true;
+  if (process.env.MOCK_BEDROCK === 'false') return false;
+  const hasKeys = Boolean(
+    (process.env.APP_AWS_ACCESS_KEY_ID && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
+    (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  );
+  return !hasKeys;
+}
+
 /**
  * Options for classification execution
  */
@@ -34,7 +64,7 @@ export async function classifyMessages(
 
   const confidenceThreshold = options.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD;
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
-  const mockMode = options.mockMode ?? (process.env.MOCK_BEDROCK === 'true' || !process.env.AWS_ACCESS_KEY_ID);
+  const mockMode = options.mockMode ?? isMockBedrockMode();
 
   const results: ClassificationResult[] = [];
 
@@ -68,13 +98,12 @@ async function runBedrockClassification(
   originalScope: string,
   options: ClassifyOptions
 ): Promise<ClassificationResult[]> {
-  const region = options.region || DEFAULT_REGION;
   const modelId = options.modelId || DEFAULT_MODEL_ID;
 
   // Dynamic import so offline/mock mode can execute without npm installing AWS SDK
   const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
 
-  const client = new BedrockRuntimeClient({ region });
+  const client = new BedrockRuntimeClient(getAwsClientOptions(options.region));
 
   // Load system prompt and user prompt template from /ai/prompts/
   const promptsDir = path.join(__dirname, '../../../ai/prompts');

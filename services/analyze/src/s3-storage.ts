@@ -3,8 +3,34 @@ const mockS3Store = new Map<string, string>();
 const DEFAULT_REGION = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || 'scope-creep-ledger-conversations-dev';
 
+function getAwsClientOptions() {
+  const region = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const accessKeyId = process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+  const sessionToken = process.env.APP_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN;
+
+  if (accessKeyId && secretAccessKey) {
+    return {
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+        ...(sessionToken ? { sessionToken } : {}),
+      },
+    };
+  }
+
+  return { region };
+}
+
 function isMockMode(): boolean {
-  return process.env.MOCK_S3 === 'true' || !process.env.AWS_ACCESS_KEY_ID;
+  if (process.env.MOCK_S3 === 'true') return true;
+  if (process.env.MOCK_S3 === 'false') return false;
+  const hasKeys = Boolean(
+    (process.env.APP_AWS_ACCESS_KEY_ID && process.env.APP_AWS_SECRET_ACCESS_KEY) ||
+    (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  );
+  return !hasKeys;
 }
 
 /**
@@ -23,7 +49,7 @@ export async function saveRawConversationToS3(
 
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
-    const client = new S3Client({ region: DEFAULT_REGION });
+    const client = new S3Client(getAwsClientOptions());
 
     await client.send(
       new PutObjectCommand({
@@ -56,7 +82,7 @@ export async function getRawConversationFromS3(
 
   try {
     const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const client = new S3Client({ region: DEFAULT_REGION });
+    const client = new S3Client(getAwsClientOptions());
 
     const response = await client.send(
       new GetObjectCommand({
