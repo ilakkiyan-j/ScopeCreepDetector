@@ -167,23 +167,37 @@ export const api = {
   },
 
   listProjects: async (userId?: string) => {
+    const localProjects = getLocalProjects();
+    const serverMap = new Map<string, Project>();
+
     try {
       const data = await json<{ projects: Project[] }>(
         userId ? `/api/projects?userId=${encodeURIComponent(userId)}` : '/api/projects'
       );
-      if (data.projects && data.projects.length > 0) {
+      if (data.projects && Array.isArray(data.projects)) {
         data.projects.forEach((p) => {
           (p as any).isLocalOnly = false;
+          serverMap.set(p.id, p);
           saveLocalProject(p);
         });
-        return data;
       }
     } catch {
-      /* network/container fallback */
+      /* fallback to local storage on server error */
     }
 
-    const localProjects = getLocalProjects().map((p) => ({ ...p, isLocalOnly: true }));
-    return { projects: localProjects };
+    // Merge any locally created projects that aren't yet in serverMap
+    localProjects.forEach((lp) => {
+      if (!serverMap.has(lp.id)) {
+        (lp as any).isLocalOnly = true;
+        serverMap.set(lp.id, lp);
+      }
+    });
+
+    const merged = Array.from(serverMap.values()).sort(
+      (a, b) => new Date(b.updatedAt ?? b.createdAt).getTime() - new Date(a.updatedAt ?? a.createdAt).getTime()
+    );
+
+    return { projects: merged };
   },
 
   getProject: async (projectId: string, userId?: string) => {
