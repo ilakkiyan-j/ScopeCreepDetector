@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils';
  * ALXO brand mark: renders the high-quality gradient 'A' glyph.
  */
 export function ALXOGlyph({
-  size = 36,
+  size = 44,
   className,
 }: {
-  /** Render size in px. Default is 36px for enhanced visibility. */
+  /** Render size in px. Default is 44px for prominent brand presence. */
   size?: number;
   className?: string;
   variant?: 'gradient' | 'flat';

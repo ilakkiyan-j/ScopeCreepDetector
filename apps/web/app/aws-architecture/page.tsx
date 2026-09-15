@@ -277,7 +277,7 @@ export default function PublicAWSArchitecturePage() {
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2" aria-label="Back to Landing Page">
-            <ALXOLogo size={28} />
+            <ALXOLogo size={44} />
           </Link>
 
           <div className="ml-auto flex items-center gap-3">
@@ -446,7 +446,7 @@ export default function PublicAWSArchitecturePage() {
       <footer className="border-t border-border/80 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
           <Link href="/" className="flex items-center gap-2">
-            <ALXOLogo size={22} />
+            <ALXOLogo size={32} />
           </Link>
           <p>© {new Date().getFullYear()} ALXO Scope Creep Ledger · Powered natively by AWS.</p>
           <div className="flex items-center gap-4">
