@@ -1,9 +1,11 @@
 'use client';
 
-import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Component, useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+
+// ─── Static poster fallback ───────────────────────────────────────────────────
 
 function Poster() {
   return (
@@ -11,38 +13,61 @@ function Poster() {
       role="presentation"
       className="absolute inset-0 flex items-center justify-center overflow-hidden"
     >
-      <div className="pointer-events-none relative h-[300px] w-[500px] max-w-[94vw] opacity-60 sm:h-[360px] sm:w-[620px]">
-        <div className="absolute left-[7%] top-[17%] h-[58%] w-[47%] rounded-2xl border border-brand-accent/30 bg-card/45 shadow-card backdrop-blur-sm [transform:perspective(700px)_rotateY(12deg)_rotateX(4deg)]">
-          <span className="absolute left-7 top-8 h-2 w-24 rounded-full bg-foreground/40" />
-          <span className="absolute left-7 top-14 h-1.5 w-40 rounded-full bg-muted-foreground/30" />
-          <span className="absolute left-7 top-20 h-1.5 w-32 rounded-full bg-muted-foreground/20" />
-          <span className="absolute bottom-7 left-7 h-7 w-24 rounded-md bg-primary/55" />
-        </div>
-        <span className="absolute left-[52%] top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-accent/60 bg-brand-accent/20 shadow-glow" />
-        <div className="absolute right-[7%] top-[32%] h-[37%] w-[25%] rounded-xl border border-primary/40 bg-primary/20 shadow-card [transform:perspective(700px)_rotateY(-12deg)_rotateX(4deg)]">
-          <span className="absolute left-5 top-6 h-1.5 w-16 rounded-full bg-primary-foreground/65" />
-          <span className="absolute left-5 top-11 h-1 w-20 rounded-full bg-primary-foreground/35" />
-          <span className="absolute bottom-5 left-5 h-3 w-12 rounded-sm bg-brand-accent/80" />
-        </div>
-      </div>
+      {/* CSS glow orbs */}
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          left: '50%',
+          top: '45%',
+          transform: 'translate(-50%, -50%)',
+          width: 500,
+          height: 500,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(6,182,212,0.12) 0%, rgba(124,92,248,0.07) 50%, transparent 70%)',
+          filter: 'blur(40px)',
+        }}
+      />
+      {/* Abstract crystal wireframe poster */}
+      <svg
+        width="220"
+        height="260"
+        viewBox="0 0 220 260"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="opacity-40"
+      >
+        <polygon points="110,10 200,70 200,190 110,250 20,190 20,70" stroke="rgba(34,211,238,0.6)" strokeWidth="1" fill="rgba(34,211,238,0.04)" />
+        <polygon points="110,45 175,90 175,175 110,220 45,175 45,90" stroke="rgba(124,92,248,0.5)" strokeWidth="1" fill="rgba(124,92,248,0.03)" />
+        <circle cx="110" cy="130" r="6" fill="rgba(34,211,238,0.8)" />
+        <line x1="110" y1="10" x2="110" y2="130" stroke="rgba(34,211,238,0.3)" strokeWidth="0.5" />
+        <line x1="20" y1="70" x2="110" y2="130" stroke="rgba(124,92,248,0.3)" strokeWidth="0.5" />
+        <line x1="200" y1="70" x2="110" y2="130" stroke="rgba(124,92,248,0.3)" strokeWidth="0.5" />
+      </svg>
     </div>
   );
 }
 
-const ScopeScene = dynamic(() => import('./ScopeScene').then((m) => m.ScopeScene), {
-  ssr: false,
-  loading: () => <Poster />,
-});
+// ─── Dynamic import of WebGL scene ────────────────────────────────────────────
 
-class CanvasBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+const ScopeScene = dynamic(
+  () => import('./ScopeScene').then((m) => m.ScopeScene),
+  { ssr: false, loading: () => <Poster /> }
+);
+
+// ─── Error boundary ───────────────────────────────────────────────────────────
+
+class CanvasBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { failed: boolean }
+> {
   state = { failed: false };
 
   static getDerivedStateFromError() {
     return { failed: true };
   }
 
-  componentDidCatch(error: any) {
-    console.warn('[R3F Canvas Warning] WebGL or Fiber initialization failed, rendering poster fallback:', error);
+  componentDidCatch(error: unknown) {
+    console.warn('[ScopeScene] WebGL failed, using poster fallback:', error);
   }
 
   render() {
@@ -50,21 +75,40 @@ class CanvasBoundary extends Component<{ fallback: ReactNode; children: ReactNod
   }
 }
 
-export function HeroScene() {
+// ─── HeroScene ────────────────────────────────────────────────────────────────
+
+interface HeroSceneProps {
+  scrollProgress: React.MutableRefObject<number>;
+  onLoaded?: () => void;
+}
+
+export function HeroScene({ scrollProgress, onLoaded }: HeroSceneProps) {
   const reduced = usePrefersReducedMotion();
   const isDesktop = useIsDesktop();
   const containerRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(true);
+  const mouseRef = useRef({ x: 0, y: 0 });
 
+  // Intersection observer to pause WebGL when off-screen
   useEffect(() => {
     const el = containerRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
-      { rootMargin: '120px' },
+      { rootMargin: '200px' }
     );
     io.observe(el);
     return () => io.disconnect();
+  }, []);
+
+  // Mouse parallax tracking
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseRef.current.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener('mousemove', onMove);
+    return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
   const showCanvas = inView && isDesktop && !reduced;
@@ -73,20 +117,42 @@ export function HeroScene() {
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-0"
+      className="absolute inset-0 z-0 overflow-hidden"
     >
-      {showCanvas ? (
-        <CanvasBoundary fallback={<Poster />}>
-          <div className="absolute inset-0">
-            <ScopeScene />
-          </div>
-        </CanvasBoundary>
-      ) : (
-        <Poster />
-      )}
+      {/* CSS ambient glow orbs — layered behind the canvas */}
+      <div className="hero-glow-orb hero-glow-orb--cyan" />
+      <div className="hero-glow-orb hero-glow-orb--indigo" />
+      <div className="hero-glow-orb hero-glow-orb--violet" />
 
-      {/* Scrim: preserves hero-legibility over the scene */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/65 to-background" />
+      {/* WebGL canvas layer — CSS filter simulates bloom glow */}
+      <div
+        className="absolute inset-0"
+        style={{
+          pointerEvents: 'none',
+          filter: 'brightness(1.08) saturate(1.15) contrast(1.02)',
+        }}
+      >
+        {showCanvas ? (
+          <CanvasBoundary fallback={<Poster />}>
+            <ScopeScene
+              mouseRef={mouseRef}
+              scrollProgress={scrollProgress}
+              onLoaded={onLoaded}
+            />
+          </CanvasBoundary>
+        ) : (
+          <Poster />
+        )}
+      </div>
+
+      {/* Bottom-to-top gradient scrim for text legibility */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(7,13,26,0.55) 0%, rgba(7,13,26,0.2) 40%, rgba(7,13,26,0.1) 60%, rgba(7,13,26,0.85) 100%)',
+        }}
+      />
     </div>
   );
 }

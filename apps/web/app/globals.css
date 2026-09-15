@@ -343,3 +343,66 @@ html {
 .bg-brand-gradient {
   background-image: linear-gradient(135deg, rgb(var(--brand-ink)), rgb(var(--brand-accent)));
 }
+
+/* ── Hero Glow Orbs ───────────────────────────────────── */
+
+.hero-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(70px);
+  will-change: transform, opacity;
+}
+
+.hero-glow-orb--cyan {
+  width: 600px;
+  height: 600px;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.14) 0%, rgba(34, 211, 238, 0.06) 50%, transparent 70%);
+  animation: float-orb 12s ease-in-out infinite;
+}
+
+.hero-glow-orb--indigo {
+  width: 500px;
+  height: 500px;
+  left: 20%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+  animation: float-orb-b 15s ease-in-out infinite;
+}
+
+.hero-glow-orb--violet {
+  width: 400px;
+  height: 400px;
+  right: 12%;
+  top: 45%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle, rgba(124, 92, 248, 0.1) 0%, transparent 70%);
+  animation: float-orb 18s ease-in-out infinite reverse;
+}
+
+/* ── Lenis smooth scroll overrides ───────────────────── */
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* ── Loading screen grid texture ─────────────────────── */
+
+.loading-bg-grid {
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

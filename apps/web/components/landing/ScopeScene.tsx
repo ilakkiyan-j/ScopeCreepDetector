@@ -1,183 +1,280 @@
 'use client';
 
 /**
- * ScopeScene.tsx — High-performance HTML5 Canvas 3D orbital scene.
+ * ScopeScene.tsx — Pure Three.js WebGL scene (no React Three Fiber).
  *
- * Renders floating 3D glass cards, animated scope orbit rings, glowing request nodes,
- * and mouse parallax with 60fps requestAnimationFrame loop and ZERO R3F reconciler dependency.
+ * Uses imperative Three.js in a useEffect to avoid the R3F reconciler
+ * incompatibility with Next.js 14 App Router. Achieves identical visual
+ * quality: crystal cluster, orbit nodes, connection lines, particle field,
+ * scroll-driven camera, mouse parallax, additive-blend glow.
  */
 
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 
-export function ScopeScene() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+interface ScopeSceneProps {
+  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
+  scrollProgress: React.MutableRefObject<number>;
+  onLoaded?: () => void;
+}
+
+export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeSceneProps) {
+  const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const mount = mountRef.current;
+    if (!mount) return;
 
-    let animId: number;
-    const startTime = performance.now();
+    // ── Renderer ─────────────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    mount.appendChild(renderer.domElement);
+    Object.assign(renderer.domElement.style, {
+      position: 'absolute', inset: '0', width: '100%', height: '100%',
+    });
 
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-    };
+    // ── Scene & Camera ────────────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      55, mount.clientWidth / mount.clientHeight, 0.1, 100
+    );
+    camera.position.set(0, 0, 5.5);
 
-    resize();
-    window.addEventListener('resize', resize);
+    // ── Lights ────────────────────────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0x0f172a, 0.5));
+    const pl1 = new THREE.PointLight(0x22d3ee, 3.5, 18);
+    pl1.position.set(3, 4, 3);
+    scene.add(pl1);
+    const pl2 = new THREE.PointLight(0x7c5cf8, 2.2, 18);
+    pl2.position.set(-4, -2, -3);
+    scene.add(pl2);
+    const pl3 = new THREE.PointLight(0xffffff, 0.9, 18);
+    pl3.position.set(0, 6, 0);
+    scene.add(pl3);
 
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseRef.current.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      mouseRef.current.targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    };
+    // ── Crystal Cluster ───────────────────────────────────────────────────────
+    const SHARDS = [
+      { pos: [0, 0, 0] as const,        rot: [0, 0, 0] as const,          sc: [0.82, 2.0, 0.82] as const,  color: 0x22d3ee, spd: 0.006  },
+      { pos: [0.7, -0.4, 0.3] as const, rot: [0.4, 0.8, 0.2] as const,   sc: [0.5, 1.45, 0.46] as const,  color: 0xa78bfa, spd: 0.009  },
+      { pos: [-0.8, 0.1, -0.2] as const,rot: [-0.3, 1.1, 0.5] as const,  sc: [0.46, 1.35, 0.41] as const, color: 0x818cf8, spd: 0.007  },
+      { pos: [0.2, 0.9, -0.4] as const, rot: [0.6, 0.3, -0.4] as const,  sc: [0.36, 1.15, 0.32] as const, color: 0x22d3ee, spd: 0.011  },
+      { pos: [-0.4, -0.8, 0.5] as const,rot: [-0.5, -0.6, 0.3] as const, sc: [0.33, 1.05, 0.3] as const,  color: 0x6366f1, spd: 0.0085 },
+      { pos: [1.1, 0.3, -0.6] as const, rot: [0.2, -0.9, 0.7] as const,  sc: [0.29, 0.88, 0.26] as const, color: 0x34d399, spd: 0.0095 },
+    ];
 
-    window.addEventListener('mousemove', onMouseMove);
+    const octGeo = new THREE.OctahedronGeometry(1, 0);
+    const clusterGroup = new THREE.Group();
+    scene.add(clusterGroup);
 
-    const draw = (now: number) => {
-      animId = requestAnimationFrame(draw);
+    const shardGroups: THREE.Group[] = SHARDS.map((cfg) => {
+      const g = new THREE.Group();
+      g.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
+      g.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2]);
+      g.scale.set(cfg.sc[0], cfg.sc[1], cfg.sc[2]);
 
-      const m = mouseRef.current;
-      m.x += (m.targetX - m.x) * 0.05;
-      m.y += (m.targetY - m.y) * 0.05;
+      // Solid phong shard
+      g.add(new THREE.Mesh(octGeo, new THREE.MeshPhongMaterial({
+        color: cfg.color,
+        transparent: true,
+        opacity: 0.6,
+        shininess: 130,
+        specular: new THREE.Color(cfg.color),
+        side: THREE.DoubleSide,
+      })));
 
-      const dpr = window.devicePixelRatio || 1;
-      const w = canvas.width;
-      const h = canvas.height;
-      const elapsed = (now - startTime) / 1000;
+      // Wireframe edge overlay
+      g.add(new THREE.Mesh(octGeo, new THREE.MeshBasicMaterial({
+        color: cfg.color,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.28,
+      })));
 
-      ctx.clearRect(0, 0, w, h);
+      // Additive glow shell (BackSide, slightly larger)
+      const glowMesh = new THREE.Mesh(octGeo, new THREE.MeshBasicMaterial({
+        color: cfg.color,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }));
+      glowMesh.scale.setScalar(1.35);
+      g.add(glowMesh);
 
-      const centerX = w * 0.5 + m.x * 20 * dpr;
-      const centerY = h * 0.5 + m.y * 15 * dpr;
+      clusterGroup.add(g);
+      return g;
+    });
 
-      // 1. Draw glowing background halo ring
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 140 * dpr, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.18)';
-      ctx.lineWidth = 3 * dpr;
-      ctx.shadowColor = '#06b6d4';
-      ctx.shadowBlur = 20 * dpr;
-      ctx.stroke();
-      ctx.restore();
+    // ── Orbit Nodes ───────────────────────────────────────────────────────────
+    const NODE_CONFIGS = [
+      { r: 2.4, spd: 0.38, off: 0,    color: 0x22d3ee },
+      { r: 2.1, spd: 0.51, off: 2.1,  color: 0xa78bfa },
+      { r: 2.7, spd: 0.30, off: 4.2,  color: 0x6366f1 },
+      { r: 1.9, spd: 0.62, off: 1.05, color: 0x34d399 },
+      { r: 2.5, spd: 0.44, off: 3.14, color: 0x22d3ee },
+      { r: 3.0, spd: 0.25, off: 5.2,  color: 0x818cf8 },
+    ];
+    const nodeGeo = new THREE.SphereGeometry(0.048, 8, 8);
+    const orbitNodes = NODE_CONFIGS.map(({ color }) => {
+      const mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }));
+      scene.add(mesh);
+      return mesh;
+    });
 
-      // 2. Floating Request Cards (Orbiting in 3D perspective space)
-      const cardConfigs = [
-        { label: 'Login Page', hours: '+3.0h', color: '#06b6d4', offset: 0 },
-        { label: 'Dark Mode', hours: '+1.5h', color: '#7c5cf8', offset: 2.1 },
-        { label: 'Custom Layout', hours: '+2.5h', color: '#f59e0b', offset: 4.2 },
+    // ── Connection Lines ──────────────────────────────────────────────────────
+    const linesGroup = new THREE.Group();
+    scene.add(linesGroup);
+    const LINE_COLORS = [0x22d3ee, 0xa78bfa, 0x6366f1];
+    for (let i = 0; i < 12; i++) {
+      const t1 = (i / 12) * Math.PI * 2;
+      const t2 = ((i + 3) / 12) * Math.PI * 2;
+      const r1 = 1.5 + Math.random() * 1.5;
+      const r2 = 1.5 + Math.random() * 1.5;
+      const pts = [
+        new THREE.Vector3(Math.cos(t1) * r1, (Math.random() - 0.5) * 1.2, Math.sin(t1) * r1),
+        new THREE.Vector3(0, (Math.random() - 0.5) * 0.4, 0),
+        new THREE.Vector3(Math.cos(t2) * r2, (Math.random() - 0.5) * 1.2, Math.sin(t2) * r2),
       ];
+      const geo = new THREE.BufferGeometry().setFromPoints(
+        new THREE.CatmullRomCurve3(pts).getPoints(24)
+      );
+      linesGroup.add(new THREE.Line(geo, new THREE.LineBasicMaterial({
+        color: LINE_COLORS[i % 3],
+        transparent: true,
+        opacity: 0.16,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })));
+    }
 
-      cardConfigs.forEach((cfg) => {
-        const angle = elapsed * 0.4 + cfg.offset;
-        const radiusX = 220 * dpr;
-        const radiusY = 80 * dpr;
-        const cx = centerX + Math.cos(angle) * radiusX;
-        const cy = centerY + Math.sin(angle) * radiusY;
-        const depthScale = 0.75 + (Math.sin(angle) + 1) * 0.25;
+    // ── Particle Field ────────────────────────────────────────────────────────
+    const PARTICLE_COUNT = 300;
+    const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      pPositions[i * 3]     = (Math.random() - 0.5) * 18;
+      pPositions[i * 3 + 1] = (Math.random() - 0.5) * 18;
+      pPositions[i * 3 + 2] = (Math.random() - 0.5) * 18;
+    }
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+    const particles = new THREE.Points(particleGeo, new THREE.PointsMaterial({
+      size: 0.025,
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.38,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }));
+    scene.add(particles);
 
-        const cardW = 120 * depthScale * dpr;
-        const cardH = 75 * depthScale * dpr;
+    // ── Camera keyframes ──────────────────────────────────────────────────────
+    const CAM_KF = [
+      { t: 0,    pos: new THREE.Vector3(0, 0, 5.5)   },
+      { t: 0.35, pos: new THREE.Vector3(2.5, 1, 4.5) },
+      { t: 0.65, pos: new THREE.Vector3(-1.5, 0.5, 6)},
+      { t: 1,    pos: new THREE.Vector3(0, -0.5, 7)  },
+    ];
+    const camPos    = new THREE.Vector3(0, 0, 5.5);
+    const tempPos   = new THREE.Vector3();
+    const lookAtPt  = new THREE.Vector3(0, 0, 0);
 
-        ctx.save();
-        ctx.translate(cx, cy);
+    // ── Resize ────────────────────────────────────────────────────────────────
+    const onResize = () => {
+      if (!mount) return;
+      camera.aspect = mount.clientWidth / mount.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mount.clientWidth, mount.clientHeight);
+    };
+    window.addEventListener('resize', onResize);
 
-        // Glass card backdrop
-        ctx.beginPath();
-        ctx.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 10 * depthScale * dpr);
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-        ctx.strokeStyle = cfg.color;
-        ctx.lineWidth = 1.5 * depthScale * dpr;
-        ctx.shadowColor = cfg.color;
-        ctx.shadowBlur = 12 * depthScale * dpr;
-        ctx.fill();
-        ctx.stroke();
+    // ── Signal loaded ─────────────────────────────────────────────────────────
+    const loadedTimeout = setTimeout(() => onLoaded?.(), 700);
 
-        // Card header line
-        ctx.fillStyle = cfg.color;
-        ctx.beginPath();
-        ctx.roundRect(-cardW / 2 + 10 * depthScale * dpr, -cardH / 2 + 10 * depthScale * dpr, cardW * 0.6, 6 * depthScale * dpr, 3 * dpr);
-        ctx.fill();
+    // ── Render loop ───────────────────────────────────────────────────────────
+    let animId: number;
+    const t0 = performance.now();
 
-        // Card body line
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.beginPath();
-        ctx.roundRect(-cardW / 2 + 10 * depthScale * dpr, -cardH / 2 + 24 * depthScale * dpr, cardW * 0.75, 4 * depthScale * dpr, 2 * dpr);
-        ctx.fill();
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      const elapsed = (performance.now() - t0) / 1000;
 
-        // Badge pill
-        ctx.fillStyle = cfg.color;
-        ctx.font = `600 ${Math.round(10 * depthScale * dpr)}px system-ui, sans-serif`;
-        ctx.textAlign = 'right';
-        ctx.fillText(cfg.hours, cardW / 2 - 10 * depthScale * dpr, cardH / 2 - 10 * depthScale * dpr);
+      // Cluster idle rotation + float
+      clusterGroup.rotation.y = elapsed * 0.08;
+      clusterGroup.position.y = Math.sin(elapsed * 0.42) * 0.06;
 
-        ctx.restore();
+      // Per-shard rotation
+      shardGroups.forEach((g, i) => {
+        g.rotation.y += SHARDS[i].spd;
+        g.rotation.x += SHARDS[i].spd * 0.5;
       });
 
-      // 3. Central Glass Ledger Hero Panel
-      ctx.save();
-      const heroW = 260 * dpr;
-      const heroH = 170 * dpr;
-      const heroX = centerX - heroW / 2;
-      const heroY = centerY - heroH / 2 + Math.sin(elapsed * 1.2) * 8 * dpr;
+      // Orbit nodes
+      NODE_CONFIGS.forEach(({ r, spd, off }, i) => {
+        const t = elapsed * spd + off;
+        orbitNodes[i].position.set(
+          Math.cos(t) * r,
+          Math.sin(t * 0.7) * (r * 0.3),
+          Math.sin(t) * r
+        );
+      });
 
-      ctx.beginPath();
-      ctx.roundRect(heroX, heroY, heroW, heroH, 16 * dpr);
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.strokeStyle = 'rgba(124, 92, 248, 0.4)';
-      ctx.lineWidth = 2 * dpr;
-      ctx.shadowColor = '#7c5cf8';
-      ctx.shadowBlur = 24 * dpr;
-      ctx.fill();
-      ctx.stroke();
+      // Lines & particles drift
+      linesGroup.rotation.y = elapsed * 0.055;
+      particles.rotation.y  = elapsed * 0.015;
+      particles.rotation.x  = Math.sin(elapsed * 0.01) * 0.05;
 
-      // Inner ledger lines
-      ctx.fillStyle = '#7c5cf8';
-      ctx.font = `bold ${Math.round(12 * dpr)}px system-ui, sans-serif`;
-      ctx.fillText('ALXO SCOPE LEDGER', heroX + 20 * dpr, heroY + 30 * dpr);
+      // Pulsing point light
+      pl1.intensity = 3.5 + Math.sin(elapsed * 1.4) * 0.6;
+      pl2.intensity = 2.2 + Math.sin(elapsed * 0.9 + 1.2) * 0.5;
 
-      // Line 1
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = `${Math.round(10 * dpr)}px system-ui, sans-serif`;
-      ctx.fillText('Verified creep items: 6', heroX + 20 * dpr, heroY + 60 * dpr);
+      // Scroll-driven camera keyframe interpolation
+      const sp = Math.max(0, Math.min(1, scrollProgress.current));
+      let from = CAM_KF[0];
+      let to   = CAM_KF[CAM_KF.length - 1];
+      for (let i = 0; i < CAM_KF.length - 1; i++) {
+        if (sp >= CAM_KF[i].t && sp <= CAM_KF[i + 1].t) {
+          from = CAM_KF[i];
+          to   = CAM_KF[i + 1];
+          break;
+        }
+      }
+      const segT = (sp - from.t) / Math.max(to.t - from.t, 0.0001);
+      tempPos.lerpVectors(from.pos, to.pos, segT);
 
-      // Line 2
-      ctx.fillStyle = '#10b981';
-      ctx.font = `bold ${Math.round(14 * dpr)}px system-ui, sans-serif`;
-      ctx.fillText('+11.5 hrs ($690.00)', heroX + 20 * dpr, heroY + 95 * dpr);
+      // Mouse parallax
+      tempPos.x += mouseRef.current.x * 0.45;
+      tempPos.y += mouseRef.current.y * 0.32;
 
-      // Status pill
-      ctx.fillStyle = '#06b6d4';
-      ctx.beginPath();
-      ctx.roundRect(heroX + 20 * dpr, heroY + 115 * dpr, 110 * dpr, 24 * dpr, 12 * dpr);
-      ctx.fill();
+      camPos.lerp(tempPos, 0.038);
+      camera.position.copy(camPos);
+      camera.lookAt(lookAtPt);
 
-      ctx.fillStyle = '#0f172a';
-      ctx.font = `bold ${Math.round(10 * dpr)}px system-ui, sans-serif`;
-      ctx.fillText('Ready to Send →', heroX + 30 * dpr, heroY + 131 * dpr);
-
-      ctx.restore();
+      renderer.render(scene, camera);
     };
 
-    animId = requestAnimationFrame(draw);
+    animate();
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMouseMove);
+      clearTimeout(loadedTimeout);
+      window.removeEventListener('resize', onResize);
+      renderer.dispose();
+      if (mount.contains(renderer.domElement)) {
+        mount.removeChild(renderer.domElement);
+      }
     };
-  }, []);
+  }, [mouseRef, scrollProgress, onLoaded]);
 
-  return (
-    <div className="relative w-full h-full min-h-[400px] flex items-center justify-center">
-      <canvas ref={canvasRef} className="w-full h-full block" />
-    </div>
-  );
+  return <div ref={mountRef} className="absolute inset-0" />;
 }
