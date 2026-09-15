@@ -160,3 +160,42 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--muted-foreground) / 0.8);
 }
+
+/* Glassmorphic card variants used in dark mode showcase */
+@layer components {
+  .glass-deep {
+    background: rgb(var(--card) / 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgb(var(--border) / 0.6);
+  }
+
+  /* Glow border accent variants — semantic, no hardcoded hex */
+  .glow-border-danger  { border-color: rgb(var(--danger) / 0.4); }
+  .glow-border-success { border-color: rgb(var(--success) / 0.4); }
+  .glow-border-info    { border-color: rgb(var(--info) / 0.4); }
+  .glow-border-warning { border-color: rgb(var(--warning) / 0.4); }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animation delay utilities for staggered entrances */
+  .delay-50  { animation-delay: 50ms; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-250 { animation-delay: 250ms; }
+  .delay-300 { animation-delay: 300ms; }
+
+  /* SVG sparkline draw animation helper */
+  .sparkline-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    pathLength: 1;
+  }
+}

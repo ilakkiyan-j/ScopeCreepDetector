@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
-import { Cloud } from 'lucide-react';
+import Link from 'next/link';
+import { Cloud, Zap, CheckCircle2, FileText, ArrowRight } from 'lucide-react';
 import { useProject } from '@/hooks/useProject';
 import { api, ProjectDetail } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +12,7 @@ import { ProjectTabs } from '@/components/project/ProjectTabs';
 import { Badge, Button, EmptyState } from '@/components/ui';
 import { PROJECT_STATUS_LABEL } from '@/lib/api';
 import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
+import { formatMoney } from '@/lib/currency';
 import { LedgerItem, Project } from '@scope-creep-ledger/shared';
 
 type Detail = ProjectDetail;
@@ -138,7 +140,7 @@ function PushToCloudButton() {
 }
 
 export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
-  const { project, loading, error } = useProjectWorkspace();
+  const { project, totals, loading, error } = useProjectWorkspace();
 
   return (
     <div className="space-y-6">
@@ -163,39 +165,76 @@ export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
         </div>
       ) : (
         <>
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">{project?.name}</h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {project?.clientName}
+          <div className="rounded-2xl border border-border/80 bg-card/60 p-5 shadow-sm backdrop-blur-md">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">{project?.name}</h2>
+                  <Badge variant="outline" className="font-mono font-semibold">{project?.currency}</Badge>
+                  <Badge variant={PROJECT_STATUS_TONE[project?.status ?? 'draft']}>
+                    {PROJECT_STATUS_LABEL[project?.status ?? 'draft']}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                  <span>Client: <strong className="font-semibold text-foreground">{project?.clientName}</strong></span>
+                  <span className="text-border">•</span>
+                  <span>Rate: <strong className="font-semibold text-foreground">{formatMoney(project?.hourlyRate ?? 60, project?.currency ?? 'USD')}/hr</strong></span>
                   {project?.updatedAt && (
-                    <span className="before:mx-1.5 before:content-['·']">
-                      Updated{' '}
-                      {new Date(project.updatedAt).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
+                    <>
+                      <span className="text-border">•</span>
+                      <span>Updated {new Date(project.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                    </>
                   )}
                 </p>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 {project?.isLocalOnly ? (
                   <PushToCloudButton />
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-1 rounded-md">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-1.5 rounded-lg">
                     <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                     Cloud Synced
                   </span>
                 )}
-                <Badge variant="outline">{project?.currency}</Badge>
-                <Badge variant={PROJECT_STATUS_TONE[project?.status ?? 'draft']}>
-                  {PROJECT_STATUS_LABEL[project?.status ?? 'draft']}
-                </Badge>
+                <Button asChild size="sm">
+                  <Link href={`/app/projects/${project?.id}/change-orders`}>
+                    <Zap className="h-4 w-4" /> Change Order Studio
+                  </Link>
+                </Button>
               </div>
             </div>
+
+            {totals && (
+              <div className="mt-4 pt-3 border-t border-border/40 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="rounded-lg bg-muted/40 p-2.5">
+                  <span className="text-muted-foreground block">Scope Creep Value</span>
+                  <span className="text-base font-bold text-success block">
+                    {formatMoney(totals.totalCost, project?.currency ?? 'USD')}
+                  </span>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-2.5">
+                  <span className="text-muted-foreground block">Verified Effort</span>
+                  <span className="text-base font-bold text-foreground block">
+                    {totals.totalHours} hrs
+                  </span>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-2.5">
+                  <span className="text-muted-foreground block">Verified Items</span>
+                  <span className="text-base font-bold text-foreground block">
+                    {totals.verifiedCount} items
+                  </span>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-2.5">
+                  <span className="text-muted-foreground block">Review Queue</span>
+                  <span className={`text-base font-bold block ${totals.reviewCount > 0 ? 'text-warning' : 'text-foreground'}`}>
+                    {totals.reviewCount} pending
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
+
           <ProjectTabs basePath={`/app/projects/${project?.id ?? ''}`} />
           {children}
         </>

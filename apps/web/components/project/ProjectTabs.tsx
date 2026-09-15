@@ -36,8 +36,8 @@ export function ProjectTabs({ basePath }: { basePath: string }) {
               'inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
               active
-                ? 'bg-primary/10 text-primary font-semibold'
-                : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                ? 'bg-card text-foreground font-semibold shadow-sm border border-border/80'
+                : 'text-muted-foreground hover:bg-card/50 hover:text-foreground'
             )}
           >
             <Icon className="h-3.5 w-3.5" />

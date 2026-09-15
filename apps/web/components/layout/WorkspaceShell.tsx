@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info, Cloud } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogOut, Settings, ChevronDown, Info, Cloud, Search } from 'lucide-react';
 import { ALXOGlyph } from '@/components/brand';
 import { useAuth } from '@/context/AuthContext';
-import { Avatar, Badge, DropdownMenu, DropdownMenuItem } from '@/components/ui';
+import { Avatar, Badge, DropdownMenu, DropdownMenuItem, CommandPalette } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@scope-creep-ledger/shared';
 
@@ -91,6 +91,18 @@ export function WorkspaceShell({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandOpen((o) => !o);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -202,7 +214,7 @@ export function WorkspaceShell({
   const demoBanner = isDemo ? (
     <div
       role="note"
-      className="flex items-center gap-2 border-b border-warning/30 bg-warning/10 px-6 py-2 text-xs font-medium text-warning backdrop-blur-sm"
+      className="flex items-center gap-2 border-b border-warning/30 bg-warning/15 px-6 py-2.5 text-xs font-medium text-warning backdrop-blur-sm lg:pl-[calc(16rem+1.5rem)] transition-all"
     >
       <Info className="h-4 w-4 shrink-0" />
       Demo Mode — exploring as demo user.
@@ -260,6 +272,18 @@ export function WorkspaceShell({
             <Menu className="h-5 w-5" />
           </button>
 
+          <button
+            type="button"
+            onClick={() => setCommandOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground transition-all hover:bg-muted/70 hover:text-foreground sm:w-64"
+          >
+            <Search className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="flex-1 text-left">Search or Cmd + K</span>
+            <kbd className="hidden rounded border border-border/80 bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground sm:inline-block">
+              ⌘K
+            </kbd>
+          </button>
+
           <div className="ml-auto flex items-center gap-2">
             <GlobalCloudSyncStatus userId={user?.userId} />
             {themeToggle}
@@ -269,6 +293,8 @@ export function WorkspaceShell({
 
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 animate-fade-in">{children}</main>
       </div>
+
+      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
     </div>
   );
 }

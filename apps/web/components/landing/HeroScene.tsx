@@ -5,11 +5,6 @@ import dynamic from 'next/dynamic';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
-const ScopeScene = dynamic(() => import('./ScopeScene').then((m) => m.ScopeScene), {
-  ssr: false,
-  loading: () => null,
-});
-
 function Poster() {
   return (
     <div
@@ -34,11 +29,22 @@ function Poster() {
   );
 }
 
+const ScopeScene = dynamic(() => import('./ScopeScene').then((m) => m.ScopeScene), {
+  ssr: false,
+  loading: () => <Poster />,
+});
+
 class CanvasBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
+
   static getDerivedStateFromError() {
     return { failed: true };
   }
+
+  componentDidCatch(error: any) {
+    console.warn('[R3F Canvas Warning] WebGL or Fiber initialization failed, rendering poster fallback:', error);
+  }
+
   render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }

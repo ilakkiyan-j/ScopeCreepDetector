@@ -48,20 +48,21 @@ export default function PreferencesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Currency</CardTitle>
+          <CardTitle>Preferred Currency</CardTitle>
           <CardDescription>
-            New projects will default to this currency. Existing projects keep their original currency.
+            Your dashboard Financial Sparkline consolidates all project values into this currency using
+            indicative FX rates. New projects also default to this currency.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <CurrencySelector
             value={(user.defaultCurrency ?? 'INR') as Currency}
             onChange={(v) => updateCurrency(v)}
-            label="Default currency"
+            label="Preferred currency"
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            The estimator does not convert between currencies. Scope creep values are expressed
-            only in the project&rsquo;s currency.
+            Original project currencies are always preserved. Dashboard totals and Financial Sparkline use
+            indicative FX rates for a consolidated overview — not for billing or invoicing.
           </p>
         </CardContent>
       </Card>

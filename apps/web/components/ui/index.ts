@@ -27,3 +27,4 @@ export {
 } from './Table';
 export { DropdownMenu, DropdownMenuItem } from './Dropdown';
 export { Tooltip } from './Tooltip';
+export { CommandPalette } from './CommandPalette';
