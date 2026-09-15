@@ -5,30 +5,36 @@ import { Project, LedgerItem } from '@scope-creep-ledger/shared';
 import { api, ProjectDetail, ApiError, getLocalProjectDetail, getLocalProjects } from '@/lib/api';
 
 // Module-level in-memory cache to ensure instant UI rendering during section switching
-let cachedProjects: Project[] | null = null;
+// Module-level in-memory cache scoped per userId to ensure instant UI rendering without cross-account leakage
+const userProjectsCacheMap = new Map<string, Project[]>();
 const projectCacheMap = new Map<string, ProjectDetail>();
 
 export function useProjects(userId?: string) {
-  const [projects, setProjects] = useState<Project[] | null>(() => cachedProjects || getLocalProjects() || null);
+  const cacheKey = userId || '__guest';
+  const [projects, setProjects] = useState<Project[] | null>(
+    () => userProjectsCacheMap.get(cacheKey) || getLocalProjects(userId) || null
+  );
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
       const data = await api.listProjects(userId);
-      cachedProjects = data.projects;
+      userProjectsCacheMap.set(cacheKey, data.projects);
       setProjects(data.projects);
       setError(null);
     } catch (e) {
-      const fallback = getLocalProjects();
+      const fallback = getLocalProjects(userId);
       if (fallback.length > 0) {
         setProjects(fallback.map((p) => ({ ...p, isLocalOnly: true })));
       } else {
         setError(e instanceof ApiError ? e.message : 'Failed to load projects.');
       }
     }
-  }, [userId]);
+  }, [userId, cacheKey]);
 
   useEffect(() => {
+    // Reset or re-hydrate projects for current userId
+    setProjects(userProjectsCacheMap.get(cacheKey) || getLocalProjects(userId) || null);
     load();
 
     const handleRevalidate = () => {
@@ -40,7 +46,7 @@ export function useProjects(userId?: string) {
     return () => {
       window.removeEventListener('scope-creep-project-updated', handleRevalidate);
     };
-  }, [load]);
+  }, [load, cacheKey, userId]);
 
   return { projects: projects || [], loading: projects === null && !error, error, reload: load };
 }

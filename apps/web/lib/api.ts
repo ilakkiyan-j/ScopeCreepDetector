@@ -29,11 +29,13 @@ export class ApiError extends Error {
 const LOCAL_PROJECTS_KEY = 'scope_creep_projects_mirror';
 const LOCAL_LEDGER_PREFIX = 'scope_creep_ledger_mirror_';
 
-export function getLocalProjects(): Project[] {
+export function getLocalProjects(userId?: string): Project[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_PROJECTS_KEY);
-    return raw ? (JSON.parse(raw) as Project[]) : [];
+    const parsed = raw ? (JSON.parse(raw) as Project[]) : [];
+    if (!userId) return parsed;
+    return parsed.filter((p) => !p.userId || p.userId === userId || userId === '__system');
   } catch {
     return [];
   }
