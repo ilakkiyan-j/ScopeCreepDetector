@@ -276,8 +276,8 @@ export default function PublicAWSArchitecturePage() {
       {/* Top Header */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
-            <ALXOLogo size={28} />
+          <Link href="/" className="flex items-center gap-2" aria-label="Back to Landing Page">
+            <ALXOLogo size={44} />
           </Link>
 
           <div className="ml-auto flex items-center gap-3">
@@ -289,9 +289,11 @@ export default function PublicAWSArchitecturePage() {
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="sm" variant="outline" className="gap-1.5 border-brand-accent/40 hover:bg-brand-accent/10">
               <Link href="/">
-                <ArrowLeft className="h-4 w-4" /> Back to Home
+                <ArrowLeft className="h-4 w-4 text-brand-accent" />
+                <span className="hidden sm:inline">Back to Landing Page</span>
+                <span className="sm:hidden">Back</span>
               </Link>
             </Button>
             <Button size="sm" onClick={() => { signInDemo(); window.location.href = '/app/dashboard'; }}>
@@ -416,7 +418,45 @@ export default function PublicAWSArchitecturePage() {
             })}
           </div>
         </section>
+
+        {/* Section 5: Return to Landing Page & Demo CTA */}
+        <section className="pt-6">
+          <Card className="border border-brand-accent/30 bg-card/70 p-6 sm:p-8 backdrop-blur-md shadow-card">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center sm:text-left">
+                <h3 className="text-lg font-bold text-foreground">Explore ALXO Scope Intelligence</h3>
+                <p className="text-xs text-muted-foreground">Return to the landing page or test the interactive scope audit demo workspace.</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button asChild variant="outline" size="lg" className="border-brand-accent/40 hover:bg-brand-accent/10">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 text-brand-accent" /> Back to Landing Page
+                  </Link>
+                </Button>
+                <Button size="lg" onClick={() => { signInDemo(); window.location.href = '/app/dashboard'; }}>
+                  <Zap className="h-4 w-4" /> Open Demo Workspace
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border/80 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
+          <Link href="/" className="flex items-center gap-2">
+            <ALXOLogo size={32} />
+          </Link>
+          <p>© {new Date().getFullYear()} ALXO Scope Creep Ledger · Powered natively by AWS.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="inline-flex items-center gap-1 font-medium text-brand-accent hover:underline">
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to Landing Page
+            </Link>
+            <Link href="/request-access" className="hover:text-foreground">Request access</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

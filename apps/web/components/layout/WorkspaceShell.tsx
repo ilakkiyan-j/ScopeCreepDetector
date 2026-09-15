@@ -141,7 +141,7 @@ export function WorkspaceShell({
   const brand = (
     <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
       <div className="flex items-center gap-3">
-        <ALXOGlyph size={32} />
+        <ALXOGlyph size={38} />
         <div className="leading-tight">
           <p className="text-base font-bold tracking-[0.15em] text-foreground">ALXO</p>
           <p className="text-[11px] font-medium text-muted-foreground">

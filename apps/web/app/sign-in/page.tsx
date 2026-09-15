@@ -113,7 +113,7 @@ function SignInForm() {
       <div className="relative mb-6 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-brand-accent/40 bg-brand-accent/10 shadow-glow">
-            <ALXOGlyph size={28} />
+            <ALXOGlyph size={36} />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">Welcome back</h1>
@@ -250,7 +250,7 @@ export default function SignInPage() {
       <header className="relative z-20 flex h-16 w-full items-center justify-between border-b border-border/70 bg-background/60 px-4 backdrop-blur-xl sm:px-8">
         <div className="flex items-center gap-6">
           <Link href="/" aria-label="ALXO home" className="transition-opacity hover:opacity-90">
-            <ALXOLogo size={28} />
+            <ALXOLogo size={44} />
           </Link>
           <div className="hidden items-center gap-2 rounded-full border border-border/80 bg-card/60 px-3 py-1 text-xs text-muted-foreground sm:flex">
             <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
