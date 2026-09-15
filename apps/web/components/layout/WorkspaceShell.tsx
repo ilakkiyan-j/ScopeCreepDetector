@@ -17,6 +17,67 @@ export interface ShellNavItem {
   section?: string;
 }
 
+import { api, getLocalProjects } from '@/lib/api';
+
+function GlobalCloudSyncStatus({ userId }: { userId?: string }) {
+  const [unsyncedCount, setUnsyncedCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+
+  const checkStatus = React.useCallback(() => {
+    const local = getLocalProjects();
+    const unsynced = local.filter((p) => (p as any).isLocalOnly);
+    setUnsyncedCount(unsynced.length);
+  }, []);
+
+  React.useEffect(() => {
+    checkStatus();
+    const handleUpdate = () => checkStatus();
+    window.addEventListener('scope-creep-project-updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('scope-creep-project-updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [checkStatus]);
+
+  const handleGlobalSync = async () => {
+    setSyncing(true);
+    try {
+      await api.syncLocalProjectsToCloud(userId);
+      checkStatus();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('scope-creep-project-updated'));
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  if (unsyncedCount > 0) {
+    return (
+      <button
+        type="button"
+        onClick={handleGlobalSync}
+        disabled={syncing}
+        className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 hover:bg-warning/20 px-3 py-1 text-xs font-semibold text-warning transition-colors"
+        title="Click to push all local projects to AWS Cloud"
+      >
+        <Cloud className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+        {syncing ? 'Syncing...' : `Sync (${unsyncedCount}) to AWS`}
+      </button>
+    );
+  }
+
+  return (
+    <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+      <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+      AWS Cloud Synced
+    </span>
+  );
+}
+
 export function WorkspaceShell({
   navItems,
   accentLabel,
@@ -200,10 +261,7 @@ export function WorkspaceShell({
           </button>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-              AWS Cloud Synced
-            </span>
+            <GlobalCloudSyncStatus userId={user?.userId} />
             {themeToggle}
             <Badge variant="secondary" className="font-semibold">{role === 'ADMIN' ? 'Admin' : 'Workspace'}</Badge>
           </div>

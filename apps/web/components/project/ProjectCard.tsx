@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { FolderKanban, ArrowUpRight, Clock } from 'lucide-react';
+import { FolderKanban, ArrowUpRight, Clock, Cloud } from 'lucide-react';
 import { Project } from '@scope-creep-ledger/shared';
 import { Badge, Card } from '@/components/ui';
-import { PROJECT_STATUS_LABEL } from '@/lib/api';
+import { api, PROJECT_STATUS_LABEL } from '@/lib/api';
 import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
 import { formatMoney } from '@/lib/currency';
 
@@ -52,10 +52,23 @@ export function ProjectCard({
               {PROJECT_STATUS_LABEL[status]}
             </Badge>
             {(project as any).isLocalOnly ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full border border-warning/20">
-                <span className="h-1 w-1 rounded-full bg-warning" />
-                Saved Locally
-              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  api.syncLocalProjectsToCloud().then(() => {
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new Event('scope-creep-project-updated'));
+                    }
+                  });
+                }}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning bg-warning/10 hover:bg-warning/20 px-2 py-0.5 rounded-full border border-warning/30 transition-colors"
+                title="Click to push project to AWS Cloud"
+              >
+                <Cloud className="h-2.5 w-2.5 text-warning" />
+                Push to Cloud
+              </button>
             ) : (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded-full border border-success/20">
                 <span className="h-1 w-1 rounded-full bg-success animate-pulse" />

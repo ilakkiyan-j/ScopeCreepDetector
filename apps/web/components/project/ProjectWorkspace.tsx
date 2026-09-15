@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
+import { Cloud } from 'lucide-react';
 import { useProject } from '@/hooks/useProject';
 import { api, ProjectDetail } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -105,6 +106,37 @@ export function ProjectProvider({
   );
 }
 
+function PushToCloudButton() {
+  const { reload } = useProjectWorkspace();
+  const { user } = useAuth();
+  const [syncing, setSyncing] = React.useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await api.syncLocalProjectsToCloud(user?.userId);
+      reload();
+    } catch {
+      /* ignore */
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleSync}
+      disabled={syncing}
+      className="border-warning/50 text-warning hover:bg-warning/10"
+    >
+      <Cloud className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+      {syncing ? 'Pushing to AWS...' : 'Push to Cloud'}
+    </Button>
+  );
+}
+
 export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
   const { project, loading, error } = useProjectWorkspace();
 
@@ -149,6 +181,14 @@ export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
               <div className="ml-auto flex items-center gap-2">
+                {project?.isLocalOnly ? (
+                  <PushToCloudButton />
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-1 rounded-md">
+                    <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                    Cloud Synced
+                  </span>
+                )}
                 <Badge variant="outline">{project?.currency}</Badge>
                 <Badge variant={PROJECT_STATUS_TONE[project?.status ?? 'draft']}>
                   {PROJECT_STATUS_LABEL[project?.status ?? 'draft']}
