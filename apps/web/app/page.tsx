@@ -12,8 +12,10 @@ import {
   FileSearch,
   FileText,
   MessageSquareText,
+  Moon,
   Scale,
   Sparkles,
+  Sun,
   Zap,
 } from 'lucide-react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
@@ -95,7 +97,7 @@ function DemoButton({ compact = false, id }: { compact?: boolean; id?: string })
         className={!compact ? 'shadow-glow group' : 'group'}
       >
         <Zap className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-        {compact ? 'Try the demo' : 'Open demo workspace'}
+        Open Demo Workspace
         {!compact && (
           <ArrowRight
             className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
@@ -109,6 +111,8 @@ function DemoButton({ compact = false, id }: { compact?: boolean; id?: string })
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 function Navbar() {
+  const { isDarkMode, toggleTheme } = useAuth();
+
   return (
     <header className="fixed top-0 z-40 w-full border-b border-white/[0.06] bg-[rgba(7,13,26,0.7)] backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
@@ -145,6 +149,14 @@ function Navbar() {
           >
             Sign In
           </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="rounded-lg p-2 text-slate-400 hover:bg-white/[0.06] hover:text-slate-100 transition-colors"
+          >
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <DemoButton compact id="nav-demo-btn" />
         </div>
       </div>
