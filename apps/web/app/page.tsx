@@ -110,11 +110,10 @@ function DemoButton({ compact = false, id }: { compact?: boolean; id?: string })
 
 function Navbar() {
   return (
-<<<<<<< HEAD
     <header className="fixed top-0 z-40 w-full border-b border-white/[0.06] bg-[rgba(7,13,26,0.7)] backdrop-blur-xl">
-      <div className="mx-auto flex h-[68px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="ALXO home">
-          <ALXOLogo size={29} />
+          <ALXOLogo size={44} />
         </Link>
         <nav className="ml-12 hidden gap-7 text-sm font-medium text-slate-400 md:flex">
           {[
@@ -137,17 +136,6 @@ function Navbar() {
           >
             <Cloud className="h-4 w-4 text-brand-accent animate-pulse-dot" />
             AWS Architecture
-=======
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="ALXO home"><ALXOLogo size={44} /></Link>
-        <nav className="ml-12 hidden gap-7 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#flow" className="hover:text-foreground">The flow</a>
-          <a href="#ledger" className="hover:text-foreground">The ledger</a>
-          <a href="#value" className="hover:text-foreground">The value</a>
-          <Link href="/aws-architecture" className="inline-flex items-center gap-1.5 font-semibold text-primary hover:text-brand-accent transition-colors">
-            <Cloud className="h-4 w-4 text-brand-accent animate-pulse-dot" /> AWS Architecture
->>>>>>> 863ef09c29a972f875554bf3ee01ce142973e9fc
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
@@ -513,11 +501,10 @@ export default function LandingPage() {
           </section>
         </main>
 
-<<<<<<< HEAD
         {/* ── Footer ──────────────────────────────────────────────── */}
         <footer className="border-t border-white/[0.06] px-4 py-8 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-slate-500 sm:flex-row">
-            <ALXOLogo size={22} />
+            <ALXOLogo size={32} />
             <p>© {new Date().getFullYear()} ALXO · Catch the work hiding between the lines.</p>
             <div className="flex items-center gap-4">
               <Link href="/aws-architecture" className="hover:text-slate-200 font-medium transition-colors">
@@ -531,11 +518,5 @@ export default function LandingPage() {
         </footer>
       </div>
     </LenisProvider>
-=======
-    <section className="px-4 pb-24 sm:px-6 lg:px-8"><div className="relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-brand-accent/30 bg-card px-6 py-16 text-center shadow-card-hover sm:px-12"><div className="absolute inset-0 bg-brand-radial opacity-80" /><div className="relative"><Eyebrow>Draw the line with confidence</Eyebrow><h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Stop letting valuable work disappear into the thread.</h2><p className="mx-auto mt-4 max-w-xl leading-7 text-muted-foreground">Open the demo and see what a defensible scope conversation feels like.</p><div className="mt-8"><DemoButton /></div></div></div></section>
-  </main>
-  <footer className="border-t border-border px-4 py-8 sm:px-6 lg:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row"><ALXOLogo size={32} /><p>© {new Date().getFullYear()} ALXO · Catch the work hiding between the lines.</p><div className="flex items-center gap-4"><Link href="/aws-architecture" className="hover:text-primary font-medium">AWS Architecture Showcase</Link><Link href="/request-access" className="hover:text-foreground">Request access</Link></div></div></footer>
-</div>
->>>>>>> 863ef09c29a972f875554bf3ee01ce142973e9fc
   );
 }
