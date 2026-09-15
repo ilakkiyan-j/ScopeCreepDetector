@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /*
  * ALXO — Semantic theme tokens.
@@ -19,6 +19,7 @@
 
 :root {
   --font-inter: 'Inter', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
   --font-jetbrains: 'JetBrains Mono', monospace;
 
   /* Light */
