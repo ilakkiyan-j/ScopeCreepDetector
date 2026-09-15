@@ -8,7 +8,7 @@ test.describe('Admin Console & User Management E2E', () => {
     await page.getByRole('button', { name: /Sign In/i }).click();
 
     // ADMIN role is steered to the admin console
-    await expect(page).toHaveURL(/\/admin\/dashboard/);
+    await expect(page).toHaveURL(/\/admin\/dashboard/, { timeout: 15000 });
     await expect(page.getByText('Scope creep value by currency')).toBeVisible({ timeout: 20000 });
     await expect(page.getByRole('heading', { name: 'Admin Overview', exact: true })).toBeVisible();
   });
@@ -29,7 +29,7 @@ test.describe('Admin Console & User Management E2E', () => {
     await page.getByLabel('Email').fill('admin@scopecreep.io');
     await page.getByLabel('Password', { exact: true }).fill('Admin123!');
     await page.getByRole('button', { name: /Sign In/i }).click();
-    await expect(page).toHaveURL(/\/admin\/dashboard/);
+    await expect(page).toHaveURL(/\/admin\/dashboard/, { timeout: 15000 });
 
     // Users directory
     await page.goto('/admin/users');

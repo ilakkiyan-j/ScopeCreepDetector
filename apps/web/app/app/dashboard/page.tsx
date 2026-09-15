@@ -352,33 +352,53 @@ export default function DashboardPage() {
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader className="pb-2 flex-row items-center justify-between">
               <CardTitle className="text-sm">Quick Actions</CardTitle>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-card/80 px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono shadow-xs">
                 ⌘K
               </kbd>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button asChild className="w-full justify-start" size="sm" id="dashboard-analyze-btn">
+              <Button asChild className="w-full justify-between h-10 group" size="sm" id="dashboard-analyze-btn">
                 <Link href="/app/analysis/new">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Analyse New Project
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-primary-foreground/20 text-primary-foreground">
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </span>
+                    <span>Analyse New Project</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full justify-start text-xs" size="sm">
+              <Button asChild variant="outline" className="w-full justify-between h-10 text-xs group" size="sm">
                 <Link href="/app/projects/new?sample=benchmark">
-                  <FolderPlus className="h-3.5 w-3.5 text-warning" />
-                  Load Benchmark Demo
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-warning/10 text-warning border border-warning/20">
+                      <FolderPlus className="h-3.5 w-3.5" />
+                    </span>
+                    <span>Load Benchmark Demo</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full justify-start" size="sm">
+              <Button asChild variant="outline" className="w-full justify-between h-10 text-xs group" size="sm">
                 <Link href="/app/projects">
-                  <ListOrdered className="h-3.5 w-3.5" />
-                  View All Projects
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-success/10 text-success border border-success/20">
+                      <ListOrdered className="h-3.5 w-3.5" />
+                    </span>
+                    <span>View All Projects</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full justify-start" size="sm">
+              <Button asChild variant="outline" className="w-full justify-between h-10 text-xs group" size="sm">
                 <Link href="/app/activity">
-                  <ActivityIcon className="h-3.5 w-3.5" />
-                  Activity Feed
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-info/10 text-info border border-info/20">
+                      <ActivityIcon className="h-3.5 w-3.5" />
+                    </span>
+                    <span>Activity Feed</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
             </CardContent>

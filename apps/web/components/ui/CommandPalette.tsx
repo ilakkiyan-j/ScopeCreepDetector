@@ -81,14 +81,18 @@ export function CommandPalette({
   const actions = [
     {
       label: 'Analyze New Project',
+      description: 'Run Bedrock AI scope analysis on chat transcripts',
       keywords: 'analyze new project create upload scope transcript',
       icon: Sparkles,
+      iconClass: 'bg-primary/10 text-primary border-primary/20',
       action: () => navigate('/app/analysis/new'),
     },
     {
       label: 'Push Local Projects to AWS Cloud',
+      description: 'Sync local project data to DynamoDB & S3',
       keywords: 'push local projects aws cloud sync syncLocal database',
       icon: Cloud,
+      iconClass: 'bg-info/10 text-info border-info/20',
       action: async () => {
         await api.syncLocalProjectsToCloud(user?.userId);
         if (typeof window !== 'undefined') {
@@ -99,26 +103,34 @@ export function CommandPalette({
     },
     {
       label: 'View AWS Architecture Showcase',
+      description: 'Explore live latency metrics for AWS services',
       keywords: 'view aws architecture showcase bedrock amplify lambda cognito dynamodb s3',
       icon: Zap,
+      iconClass: 'bg-warning/15 text-warning border-warning/30',
       action: () => navigate('/aws-architecture'),
     },
     {
       label: 'Load Benchmark Sample Thread',
+      description: 'Stage sample thread for instant scope audit demo',
       keywords: 'load benchmark sample thread demo conversation test',
       icon: FolderPlus,
+      iconClass: 'bg-warning/10 text-warning border-warning/20',
       action: () => navigate('/app/projects/new?sample=benchmark'),
     },
     {
       label: 'View All Projects',
+      description: 'Manage active, completed, and draft project ledgers',
       keywords: 'view all projects list catalog engagements',
       icon: FolderKanban,
+      iconClass: 'bg-success/10 text-success border-success/20',
       action: () => navigate('/app/projects'),
     },
     {
       label: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      description: 'Toggle UI color theme preference',
       keywords: 'switch light dark theme mode toggle color',
       icon: isDarkMode ? Sun : Moon,
+      iconClass: 'bg-primary/10 text-primary border-primary/20',
       action: () => {
         toggleTheme();
         onClose();
@@ -126,8 +138,10 @@ export function CommandPalette({
     },
     {
       label: 'View Activity Feed',
+      description: 'Audit recent project events and verification activity',
       keywords: 'activity feed audit log recent changes history',
       icon: Activity,
+      iconClass: 'bg-success/10 text-success border-success/20',
       action: () => navigate('/app/activity'),
     },
   ];
@@ -135,7 +149,7 @@ export function CommandPalette({
   const filteredActions = actions.filter((a) => {
     const q = query.toLowerCase().trim();
     if (!q) return true;
-    return `${a.label} ${a.keywords}`.toLowerCase().includes(q);
+    return `${a.label} ${a.description} ${a.keywords}`.toLowerCase().includes(q);
   });
 
   const navigate = (href: string) => {
@@ -175,7 +189,7 @@ export function CommandPalette({
               <p className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
                 Quick Actions
               </p>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {filteredActions.map((act, i) => {
                   const Icon = act.icon;
                   return (
@@ -183,11 +197,16 @@ export function CommandPalette({
                       key={i}
                       type="button"
                       onClick={act.action}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted focus:outline-none"
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-foreground transition-all hover:bg-muted/80 focus:outline-none group"
                     >
-                      <Icon className="h-4 w-4 text-primary" />
-                      <span className="flex-1 font-medium">{act.label}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className={cn('p-1.5 rounded-lg border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105', act.iconClass)}>
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground text-xs sm:text-sm leading-snug">{act.label}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{act.description}</p>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                     </button>
                   );
                 })}

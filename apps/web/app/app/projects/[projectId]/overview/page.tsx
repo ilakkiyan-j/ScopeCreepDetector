@@ -91,23 +91,38 @@ export default function OverviewPage({ params }: { params: { projectId: string }
             </CardHeader>
             <CardContent className="space-y-2">
               {totals && totals.reviewCount > 0 && (
-                <Button asChild size="sm" className="w-full justify-start">
+                <Button asChild size="sm" className="w-full justify-between h-10 group">
                   <Link href={`/app/projects/${project.id}/ledger`}>
-                    <ShieldAlert className="h-3.5 w-3.5 text-warning" />
-                    Review {totals.reviewCount} pending item{totals.reviewCount === 1 ? '' : 's'}
+                    <span className="flex items-center gap-2.5">
+                      <span className="p-1 rounded-md bg-warning/20 text-warning border border-warning/30">
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                      </span>
+                      <span>Review {totals.reviewCount} pending item{totals.reviewCount === 1 ? '' : 's'}</span>
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </Button>
               )}
-              <Button asChild variant="outline" size="sm" className="w-full justify-start text-xs">
+              <Button asChild variant="outline" size="sm" className="w-full justify-between h-10 text-xs group">
                 <Link href={`/app/projects/${project.id}/change-orders`}>
-                  <FileText className="h-3.5 w-3.5 text-primary" />
-                  Generate Change Order
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+                      <FileText className="h-3.5 w-3.5" />
+                    </span>
+                    <span>Generate Change Order</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="w-full justify-start text-xs">
+              <Button asChild variant="outline" size="sm" className="w-full justify-between h-10 text-xs group">
                 <Link href={`/app/projects/${project.id}/ledger`}>
-                  <ListOrdered className="h-3.5 w-3.5" />
-                  View Flagged Ledger
+                  <span className="flex items-center gap-2.5">
+                    <span className="p-1 rounded-md bg-success/10 text-success border border-success/20">
+                      <ListOrdered className="h-3.5 w-3.5" />
+                    </span>
+                    <span>View Flagged Ledger</span>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </Button>
             </CardContent>
