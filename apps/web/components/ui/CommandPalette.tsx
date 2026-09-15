@@ -15,6 +15,8 @@ import {
   ShieldAlert,
   ArrowRight,
   X,
+  Sparkles,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { api, getLocalProjects } from '@/lib/api';
@@ -78,7 +80,14 @@ export function CommandPalette({
 
   const actions = [
     {
+      label: 'Analyze New Project',
+      keywords: 'analyze new project create upload scope transcript',
+      icon: Sparkles,
+      action: () => navigate('/app/analysis/new'),
+    },
+    {
       label: 'Push Local Projects to AWS Cloud',
+      keywords: 'push local projects aws cloud sync syncLocal database',
       icon: Cloud,
       action: async () => {
         await api.syncLocalProjectsToCloud(user?.userId);
@@ -89,16 +98,45 @@ export function CommandPalette({
       },
     },
     {
+      label: 'View AWS Architecture Showcase',
+      keywords: 'view aws architecture showcase bedrock amplify lambda cognito dynamodb s3',
+      icon: Zap,
+      action: () => navigate('/aws-architecture'),
+    },
+    {
+      label: 'Load Benchmark Sample Thread',
+      keywords: 'load benchmark sample thread demo conversation test',
+      icon: FolderPlus,
+      action: () => navigate('/app/projects/new?sample=benchmark'),
+    },
+    {
+      label: 'View All Projects',
+      keywords: 'view all projects list catalog engagements',
+      icon: FolderKanban,
+      action: () => navigate('/app/projects'),
+    },
+    {
       label: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      keywords: 'switch light dark theme mode toggle color',
       icon: isDarkMode ? Sun : Moon,
       action: () => {
         toggleTheme();
         onClose();
       },
     },
+    {
+      label: 'View Activity Feed',
+      keywords: 'activity feed audit log recent changes history',
+      icon: Activity,
+      action: () => navigate('/app/activity'),
+    },
   ];
 
-  const filteredActions = actions.filter((a) => a.label.toLowerCase().includes(query.toLowerCase()));
+  const filteredActions = actions.filter((a) => {
+    const q = query.toLowerCase().trim();
+    if (!q) return true;
+    return `${a.label} ${a.keywords}`.toLowerCase().includes(q);
+  });
 
   const navigate = (href: string) => {
     router.push(href);

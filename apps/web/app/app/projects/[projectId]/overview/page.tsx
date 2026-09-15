@@ -2,10 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ListOrdered, Clock3, TrendingUp, ShieldAlert, ArrowRight, ScrollText } from 'lucide-react';
+import { ListOrdered, Clock3, TrendingUp, ShieldAlert, ArrowRight, ScrollText, FileText, Sparkles } from 'lucide-react';
 import { useProjectWorkspace } from '@/components/project/ProjectWorkspace';
 import { MetricCard } from '@/components/MetricCard';
-import { Button, Badge, EmptyState } from '@/components/ui';
+import { Button, Badge, EmptyState, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { LedgerItemCard } from '@/components/ledger/LedgerItemCard';
 import { formatMoney } from '@/lib/currency';
 import { PageHeader } from '@/components/PageHeader';
@@ -63,8 +63,8 @@ export default function OverviewPage({ params }: { params: { projectId: string }
           </blockquote>
         </div>
 
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Project</h2>
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold text-foreground">Project Info</h2>
           <dl className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
             <div className="flex justify-between gap-2">
               <dt className="text-muted-foreground">Client</dt>
@@ -82,14 +82,36 @@ export default function OverviewPage({ params }: { params: { projectId: string }
             </div>
           </dl>
 
-          {totals && totals.reviewCount > 0 && (
-            <Button asChild className="w-full">
-              <Link href={`/app/projects/${project.id}/ledger`}>
-                Review {totals.reviewCount} pending item{totals.reviewCount === 1 ? '' : 's'}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          )}
+          {/* Quick Actions Card */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {totals && totals.reviewCount > 0 && (
+                <Button asChild size="sm" className="w-full justify-start">
+                  <Link href={`/app/projects/${project.id}/ledger`}>
+                    <ShieldAlert className="h-3.5 w-3.5 text-warning" />
+                    Review {totals.reviewCount} pending item{totals.reviewCount === 1 ? '' : 's'}
+                  </Link>
+                </Button>
+              )}
+              <Button asChild variant="outline" size="sm" className="w-full justify-start text-xs">
+                <Link href={`/app/projects/${project.id}/change-orders`}>
+                  <FileText className="h-3.5 w-3.5 text-primary" />
+                  Generate Change Order
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-full justify-start text-xs">
+                <Link href={`/app/projects/${project.id}/ledger`}>
+                  <ListOrdered className="h-3.5 w-3.5" />
+                  View Flagged Ledger
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

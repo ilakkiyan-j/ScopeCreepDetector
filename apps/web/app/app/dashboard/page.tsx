@@ -350,14 +350,23 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {/* Quick Actions */}
           <Card className="border-primary/20 bg-primary/5">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex-row items-center justify-between">
               <CardTitle className="text-sm">Quick Actions</CardTitle>
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">
+                ⌘K
+              </kbd>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button asChild className="w-full justify-start" size="sm" id="dashboard-analyze-btn">
                 <Link href="/app/analysis/new">
                   <Sparkles className="h-3.5 w-3.5" />
                   Analyse New Project
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-start text-xs" size="sm">
+                <Link href="/app/projects/new?sample=benchmark">
+                  <FolderPlus className="h-3.5 w-3.5 text-warning" />
+                  Load Benchmark Demo
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start" size="sm">
