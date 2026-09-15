@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: 'ALXO — Catch the work hiding between the lines',
   description:
     'Catch the work hiding between the lines. ALXO turns messy client conversations into an evidence-backed record of additional work, estimated impact, and actionable change orders.',
+  icons: {
+    icon: [
+      { url: '/alxo_logo.png' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    shortcut: '/alxo_logo.png',
+    apple: '/alxo_logo.png',
+  },
 };
 
 const THEME_INIT_SCRIPT = `
