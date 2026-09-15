@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { recordActivity } from '@/lib/activity';
 import { LoadingState } from '@/components/state/LoadingState';
 import { ProjectTabs } from '@/components/project/ProjectTabs';
-import { Badge, Button } from '@/components/ui';
+import { Badge, Button, EmptyState } from '@/components/ui';
 import { PROJECT_STATUS_LABEL } from '@/lib/api';
 import { PROJECT_STATUS_TONE } from '@/lib/projectStatus';
 import { LedgerItem, Project } from '@scope-creep-ledger/shared';
@@ -113,12 +113,21 @@ export function ProjectWorkspace({ children }: { children: React.ReactNode }) {
       {loading && !project ? (
         <LoadingState label="Loading project…" />
       ) : error && !project ? (
-        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
-          {error}
-          <br />
-          <Button variant="outline" size="sm" className="mt-3" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
+        <div className="py-12">
+          <EmptyState
+            title="Project Not Found"
+            description="This project ID is not available in your AWS cloud storage or local cache. Create a new analysis or choose an active project."
+            action={
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+                <Button variant="outline" onClick={() => window.location.href = '/app/projects'}>
+                  View All Projects
+                </Button>
+                <Button onClick={() => window.location.href = '/app/analysis/new'}>
+                  Start New Analysis
+                </Button>
+              </div>
+            }
+          />
         </div>
       ) : (
         <>
