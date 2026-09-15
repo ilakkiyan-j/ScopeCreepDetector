@@ -400,7 +400,9 @@ export async function verifyLedgerItem(
  */
 export async function calculateProjectTotals(
   projectId: string,
-  userId?: string
+  userId?: string,
+  preFetchedItems?: LedgerItem[],
+  preFetchedProject?: Project
 ): Promise<{
   totalHours: number;
   totalCost: number;
@@ -408,8 +410,8 @@ export async function calculateProjectTotals(
   reviewCount: number;
   rejectedCount: number;
 }> {
-  const items = await getLedgerItems(projectId, userId);
-  const project = await getProject(projectId, userId);
+  const items = preFetchedItems ?? (await getLedgerItems(projectId, userId));
+  const project = preFetchedProject ?? (await getProject(projectId, userId));
   const hourlyRate = project ? project.hourlyRate : 60;
 
   let totalHours = 0;
