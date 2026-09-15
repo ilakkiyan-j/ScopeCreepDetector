@@ -11,14 +11,16 @@ import {
   Cloud,
   FileSearch,
   FileText,
+  Menu,
   MessageSquareText,
   Moon,
   Scale,
   Sparkles,
   Sun,
+  X,
   Zap,
 } from 'lucide-react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui';
 import { ALXOLogo } from '@/components/brand';
@@ -112,14 +114,15 @@ function DemoButton({ compact = false, id }: { compact?: boolean; id?: string })
 
 function Navbar() {
   const { isDarkMode, toggleTheme } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="fixed top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="ALXO home">
-          <ALXOLogo size={44} />
+          <ALXOLogo size={40} />
         </Link>
-        <nav className="ml-12 hidden gap-7 text-sm font-medium text-muted-foreground md:flex">
+        <nav className="ml-10 hidden gap-6 text-sm font-medium text-muted-foreground md:flex">
           {[
             { href: '#flow', label: 'The flow' },
             { href: '#showcase', label: 'Showcase' },
@@ -142,7 +145,7 @@ function Navbar() {
             AWS Architecture
           </Link>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <Link
             href="/sign-in"
             className="hidden px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors sm:block"
@@ -158,8 +161,63 @@ function Navbar() {
             {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4" />}
           </button>
           <DemoButton compact id="nav-demo-btn" />
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors md:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile navigation slide-over drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="border-b border-border/80 bg-background/95 backdrop-blur-2xl md:hidden overflow-hidden"
+          >
+            <div className="flex flex-col gap-3 px-5 py-4">
+              {[
+                { href: '#flow', label: 'Chapter 01 · The flow' },
+                { href: '#showcase', label: 'Chapter 02 · Showcase' },
+                { href: '#ledger', label: 'Chapter 03 · The ledger' },
+                { href: '#value', label: 'Chapter 04 · The value' },
+              ].map(({ href, label }) => (
+                <a
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted hover:text-brand-accent transition-colors"
+                >
+                  {label}
+                </a>
+              ))}
+              <div className="my-1 border-t border-border/60" />
+              <Link
+                href="/aws-architecture"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-muted hover:text-brand-accent transition-colors"
+              >
+                <Cloud className="h-4 w-4 text-brand-accent animate-pulse-dot" />
+                Live AWS Architecture Showcase →
+              </Link>
+              <Link
+                href="/sign-in"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                Sign In to ALXO
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
@@ -334,6 +392,67 @@ export default function LandingPage() {
                   >
                     No credit card · Demo data is ready to explore
                   </motion.p>
+
+                  {/* Mobile & Tablet Stacked Visual Cards Showcase (screens < lg) */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.1, duration: 0.6 }}
+                    className="mt-8 flex flex-col gap-3.5 w-full max-w-xl lg:hidden text-left"
+                  >
+                    {/* Card 1: Client Chat Request */}
+                    <div className="rounded-2xl border border-brand-accent/40 bg-card/90 p-4 shadow-card backdrop-blur-md">
+                      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-accent/20 text-brand-accent font-bold text-[11px]">
+                            SC
+                          </span>
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">Sarah Chen (Client)</p>
+                            <p className="text-[10px] text-muted-foreground">Slack thread · 2:14 PM</p>
+                          </div>
+                        </div>
+                        <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 font-mono text-[10px] font-medium text-brand-accent">
+                          New Request
+                        </span>
+                      </div>
+                      <p className="mt-2.5 text-xs leading-relaxed text-foreground/90">
+                        “Can we add dark mode and responsive navbar to this phase as well?”
+                      </p>
+                      <div className="mt-2.5 flex items-center justify-between font-mono text-[10px] text-muted-foreground border-t border-border/40 pt-2">
+                        <span>Original scope: Light mode</span>
+                        <span className="font-semibold text-brand-accent">+6 hrs estimated</span>
+                      </div>
+                    </div>
+
+                    {/* Card 2: ALXO Scope Ledger Verified Summary */}
+                    <div className="rounded-2xl border border-primary/40 bg-card/90 p-4 shadow-card backdrop-blur-md">
+                      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <p className="text-xs font-bold text-foreground">ALXO Scope Ledger</p>
+                        </div>
+                        <span className="flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-success">
+                          <Check className="h-3 w-3" />
+                          Verified
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between rounded-lg bg-muted/60 p-1.5 border border-border/50">
+                          <span className="text-foreground text-[11px]">Dark mode theme toggle</span>
+                          <span className="font-mono text-xs font-semibold text-primary">+$360.00</span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-muted/60 p-1.5 border border-border/50">
+                          <span className="text-foreground text-[11px]">Responsive mobile nav</span>
+                          <span className="font-mono text-xs font-semibold text-primary">+$180.00</span>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 flex items-center justify-between border-t border-border/60 pt-2 text-xs">
+                        <span className="font-semibold text-muted-foreground text-[11px]">Recovered Scope Value</span>
+                        <span className="font-mono font-bold text-foreground text-sm">+$540.00</span>
+                      </div>
+                    </div>
+                  </motion.div>
 
                   {/* Stats bar */}
                   <motion.div

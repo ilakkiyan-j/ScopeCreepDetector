@@ -22,7 +22,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
       <nav
         aria-label="Settings sections"
-        className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted/50 p-1"
+        className="flex w-full max-w-full gap-1 overflow-x-auto whitespace-nowrap scroll-smooth rounded-lg border border-border bg-muted/50 p-1 select-none"
       >
         {TABS.map((tab) => {
           const active = pathname === tab.href;

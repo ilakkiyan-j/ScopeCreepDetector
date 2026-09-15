@@ -275,29 +275,31 @@ export default function PublicAWSArchitecturePage() {
     <div className="min-h-screen bg-background text-foreground selection:bg-brand-accent/20">
       {/* Top Header */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-auto min-h-[72px] py-2 max-w-7xl items-center px-4 sm:px-6 lg:px-8 flex-wrap gap-2 sm:gap-3">
           <Link href="/" className="flex items-center gap-2" aria-label="Back to Landing Page">
-            <ALXOLogo size={44} />
+            <ALXOLogo size={40} />
           </Link>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-3 flex-wrap justify-end">
             <button
               type="button"
               onClick={toggleTheme}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Toggle theme"
             >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4" />}
             </button>
             <Button asChild size="sm" variant="outline" className="gap-1.5 border-brand-accent/40 hover:bg-brand-accent/10">
               <Link href="/">
-                <ArrowLeft className="h-4 w-4 text-brand-accent" />
+                <ArrowLeft className="h-3.5 w-3.5 text-brand-accent" />
                 <span className="hidden sm:inline">Back to Landing Page</span>
-                <span className="sm:hidden">Back</span>
+                <span className="sm:hidden text-xs">Back</span>
               </Link>
             </Button>
             <Button size="sm" onClick={() => { signInDemo(); window.location.href = '/app/dashboard'; }}>
-              <Zap className="h-4 w-4" /> Open Demo Workspace
+              <Zap className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Open Demo Workspace</span>
+              <span className="sm:hidden text-xs">Demo</span>
             </Button>
           </div>
         </div>

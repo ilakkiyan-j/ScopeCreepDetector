@@ -21,7 +21,7 @@ export function ProjectTabs({ basePath }: { basePath: string }) {
   return (
     <nav
       aria-label="Project sections"
-      className="flex w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted/50 p-1"
+      className="flex w-full max-w-full gap-1 overflow-x-auto whitespace-nowrap scroll-smooth rounded-lg border border-border bg-muted/50 p-1 select-none"
     >
       {TABS.map((tab) => {
         const href = `${basePath}/${tab.href}`;
