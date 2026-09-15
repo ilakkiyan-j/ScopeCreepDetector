@@ -27,21 +27,25 @@ function Poster() {
           filter: 'blur(40px)',
         }}
       />
-      {/* Abstract crystal wireframe poster */}
+      {/* Abstract floating message cards poster */}
       <svg
-        width="220"
-        height="260"
-        viewBox="0 0 220 260"
+        width="280"
+        height="220"
+        viewBox="0 0 280 220"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="opacity-40"
       >
-        <polygon points="110,10 200,70 200,190 110,250 20,190 20,70" stroke="rgba(34,211,238,0.6)" strokeWidth="1" fill="rgba(34,211,238,0.04)" />
-        <polygon points="110,45 175,90 175,175 110,220 45,175 45,90" stroke="rgba(124,92,248,0.5)" strokeWidth="1" fill="rgba(124,92,248,0.03)" />
-        <circle cx="110" cy="130" r="6" fill="rgba(34,211,238,0.8)" />
-        <line x1="110" y1="10" x2="110" y2="130" stroke="rgba(34,211,238,0.3)" strokeWidth="0.5" />
-        <line x1="20" y1="70" x2="110" y2="130" stroke="rgba(124,92,248,0.3)" strokeWidth="0.5" />
-        <line x1="200" y1="70" x2="110" y2="130" stroke="rgba(124,92,248,0.3)" strokeWidth="0.5" />
+        <rect x="20" y="30" width="140" height="70" rx="10" stroke="rgba(34,211,238,0.6)" strokeWidth="1" fill="rgba(34,211,238,0.04)" />
+        <rect x="34" y="44" width="70" height="6" rx="2" fill="rgba(34,211,238,0.7)" />
+        <rect x="34" y="58" width="100" height="4" rx="2" fill="rgba(148,163,184,0.4)" />
+        <rect x="34" y="68" width="60" height="4" rx="2" fill="rgba(148,163,184,0.3)" />
+
+        <rect x="120" y="110" width="140" height="75" rx="10" stroke="rgba(124,92,248,0.6)" strokeWidth="1" fill="rgba(124,92,248,0.04)" />
+        <rect x="134" y="124" width="60" height="6" rx="2" fill="rgba(124,92,248,0.8)" />
+        <rect x="134" y="138" width="100" height="4" rx="2" fill="rgba(148,163,184,0.4)" />
+        <rect x="134" y="148" width="80" height="4" rx="2" fill="rgba(148,163,184,0.3)" />
+        <circle cx="240" cy="126" r="6" fill="rgba(16,185,129,0.8)" />
       </svg>
     </div>
   );

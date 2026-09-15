@@ -1,12 +1,11 @@
 'use client';
 
 /**
- * ScopeScene.tsx — Pure Three.js WebGL scene (no React Three Fiber).
+ * ScopeScene.tsx — Pure Three.js WebGL scene for Hero section.
  *
- * Uses imperative Three.js in a useEffect to avoid the R3F reconciler
- * incompatibility with Next.js 14 App Router. Achieves identical visual
- * quality: crystal cluster, orbit nodes, connection lines, particle field,
- * scroll-driven camera, mouse parallax, additive-blend glow.
+ * Imperative Three.js 3D scene rendering floating glass message panels,
+ * orbiting client request cards with text lines, scope drift pathing,
+ * particle field, scroll-driven camera, and mouse parallax.
  */
 
 import { useRef, useEffect } from 'react';
@@ -25,6 +24,8 @@ export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeScenePro
     const mount = mountRef.current;
     if (!mount) return;
 
+    const isDark = () => document.documentElement.classList.contains('dark');
+
     // ── Renderer ─────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -33,163 +34,216 @@ export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeScenePro
     renderer.toneMappingExposure = 1.25;
     mount.appendChild(renderer.domElement);
     Object.assign(renderer.domElement.style, {
-      position: 'absolute', inset: '0', width: '100%', height: '100%',
+      position: 'absolute',
+      inset: '0',
+      width: '100%',
+      height: '100%',
     });
 
     // ── Scene & Camera ────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      55, mount.clientWidth / mount.clientHeight, 0.1, 100
+      50,
+      mount.clientWidth / mount.clientHeight,
+      0.1,
+      100
     );
-    camera.position.set(0, 0, 5.5);
+    camera.position.set(0, 0, 6.2);
 
     // ── Lights ────────────────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0x0f172a, 0.5));
-    const pl1 = new THREE.PointLight(0x22d3ee, 3.5, 18);
-    pl1.position.set(3, 4, 3);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambientLight);
+
+    const pl1 = new THREE.PointLight(0x22d3ee, 3.2, 20);
+    pl1.position.set(4, 4, 3);
     scene.add(pl1);
-    const pl2 = new THREE.PointLight(0x7c5cf8, 2.2, 18);
-    pl2.position.set(-4, -2, -3);
+
+    const pl2 = new THREE.PointLight(0x7c5cf8, 2.5, 20);
+    pl2.position.set(-4, -2, -2);
     scene.add(pl2);
-    const pl3 = new THREE.PointLight(0xffffff, 0.9, 18);
-    pl3.position.set(0, 6, 0);
-    scene.add(pl3);
 
-    // ── Crystal Cluster ───────────────────────────────────────────────────────
-    const SHARDS = [
-      { pos: [0, 0, 0] as const,        rot: [0, 0, 0] as const,          sc: [0.82, 2.0, 0.82] as const,  color: 0x22d3ee, spd: 0.006  },
-      { pos: [0.7, -0.4, 0.3] as const, rot: [0.4, 0.8, 0.2] as const,   sc: [0.5, 1.45, 0.46] as const,  color: 0xa78bfa, spd: 0.009  },
-      { pos: [-0.8, 0.1, -0.2] as const,rot: [-0.3, 1.1, 0.5] as const,  sc: [0.46, 1.35, 0.41] as const, color: 0x818cf8, spd: 0.007  },
-      { pos: [0.2, 0.9, -0.4] as const, rot: [0.6, 0.3, -0.4] as const,  sc: [0.36, 1.15, 0.32] as const, color: 0x22d3ee, spd: 0.011  },
-      { pos: [-0.4, -0.8, 0.5] as const,rot: [-0.5, -0.6, 0.3] as const, sc: [0.33, 1.05, 0.3] as const,  color: 0x6366f1, spd: 0.0085 },
-      { pos: [1.1, 0.3, -0.6] as const, rot: [0.2, -0.9, 0.7] as const,  sc: [0.29, 0.88, 0.26] as const, color: 0x34d399, spd: 0.0095 },
-    ];
+    // ── Helper to build a 3D message card ─────────────────────────────────────
+    function createMessageCard({
+      width = 1.8,
+      height = 1.1,
+      cardColor = 0x22d3ee,
+      lineColor = 0x94a3b8,
+      badgeColor = 0xf43f5e,
+      hasBadge = true,
+    }) {
+      const cardGroup = new THREE.Group();
 
-    const octGeo = new THREE.OctahedronGeometry(1, 0);
-    const clusterGroup = new THREE.Group();
-    scene.add(clusterGroup);
-
-    const shardGroups: THREE.Group[] = SHARDS.map((cfg) => {
-      const g = new THREE.Group();
-      g.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
-      g.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2]);
-      g.scale.set(cfg.sc[0], cfg.sc[1], cfg.sc[2]);
-
-      // Solid phong shard
-      g.add(new THREE.Mesh(octGeo, new THREE.MeshPhongMaterial({
-        color: cfg.color,
+      // Card glass panel geometry & material
+      const cardGeo = new THREE.BoxGeometry(width, height, 0.06);
+      const cardMat = new THREE.MeshPhongMaterial({
+        color: isDark() ? 0x0f172a : 0xffffff,
         transparent: true,
-        opacity: 0.6,
-        shininess: 130,
-        specular: new THREE.Color(cfg.color),
+        opacity: isDark() ? 0.65 : 0.85,
+        shininess: 90,
+        specular: new THREE.Color(cardColor),
         side: THREE.DoubleSide,
-      })));
+      });
+      const cardMesh = new THREE.Mesh(cardGeo, cardMat);
+      cardGroup.add(cardMesh);
 
-      // Wireframe edge overlay
-      g.add(new THREE.Mesh(octGeo, new THREE.MeshBasicMaterial({
-        color: cfg.color,
+      // Card border wireframe overlay
+      const borderMat = new THREE.MeshBasicMaterial({
+        color: cardColor,
         wireframe: true,
         transparent: true,
-        opacity: 0.28,
-      })));
+        opacity: 0.45,
+      });
+      const borderMesh = new THREE.Mesh(cardGeo, borderMat);
+      cardGroup.add(borderMesh);
 
-      // Additive glow shell (BackSide, slightly larger)
-      const glowMesh = new THREE.Mesh(octGeo, new THREE.MeshBasicMaterial({
-        color: cfg.color,
+      // Header title bar line
+      const headerGeo = new THREE.BoxGeometry(width * 0.45, 0.07, 0.03);
+      const headerMat = new THREE.MeshBasicMaterial({
+        color: cardColor,
         transparent: true,
-        opacity: 0.1,
-        side: THREE.BackSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }));
-      glowMesh.scale.setScalar(1.35);
-      g.add(glowMesh);
+        opacity: 0.85,
+      });
+      const headerMesh = new THREE.Mesh(headerGeo, headerMat);
+      headerMesh.position.set(-width * 0.22, height * 0.28, 0.04);
+      cardGroup.add(headerMesh);
 
-      clusterGroup.add(g);
-      return g;
-    });
+      // Simulated chat message text lines
+      const lineLengths = [0.75, 0.6, 0.4];
+      lineLengths.forEach((len, idx) => {
+        const lineGeo = new THREE.BoxGeometry(width * len, 0.045, 0.03);
+        const lineMat = new THREE.MeshBasicMaterial({
+          color: lineColor,
+          transparent: true,
+          opacity: isDark() ? 0.6 : 0.4,
+        });
+        const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+        lineMesh.position.set(-width * (0.45 - len * 0.5), height * 0.08 - idx * 0.16, 0.04);
+        cardGroup.add(lineMesh);
+      });
 
-    // ── Orbit Nodes ───────────────────────────────────────────────────────────
-    const NODE_CONFIGS = [
-      { r: 2.4, spd: 0.38, off: 0,    color: 0x22d3ee },
-      { r: 2.1, spd: 0.51, off: 2.1,  color: 0xa78bfa },
-      { r: 2.7, spd: 0.30, off: 4.2,  color: 0x6366f1 },
-      { r: 1.9, spd: 0.62, off: 1.05, color: 0x34d399 },
-      { r: 2.5, spd: 0.44, off: 3.14, color: 0x22d3ee },
-      { r: 3.0, spd: 0.25, off: 5.2,  color: 0x818cf8 },
-    ];
-    const nodeGeo = new THREE.SphereGeometry(0.048, 8, 8);
-    const orbitNodes = NODE_CONFIGS.map(({ color }) => {
-      const mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({
-        color,
-        transparent: true,
-        opacity: 0.95,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }));
-      scene.add(mesh);
-      return mesh;
-    });
+      // Scope creep warning badge dot
+      if (hasBadge) {
+        const badgeGeo = new THREE.SphereGeometry(0.08, 12, 12);
+        const badgeMat = new THREE.MeshBasicMaterial({
+          color: badgeColor,
+          transparent: true,
+          opacity: 0.9,
+        });
+        const badgeMesh = new THREE.Mesh(badgeGeo, badgeMat);
+        badgeMesh.position.set(width * 0.38, height * 0.3, 0.05);
+        cardGroup.add(badgeMesh);
+      }
 
-    // ── Connection Lines ──────────────────────────────────────────────────────
-    const linesGroup = new THREE.Group();
-    scene.add(linesGroup);
-    const LINE_COLORS = [0x22d3ee, 0xa78bfa, 0x6366f1];
-    for (let i = 0; i < 12; i++) {
-      const t1 = (i / 12) * Math.PI * 2;
-      const t2 = ((i + 3) / 12) * Math.PI * 2;
-      const r1 = 1.5 + Math.random() * 1.5;
-      const r2 = 1.5 + Math.random() * 1.5;
-      const pts = [
-        new THREE.Vector3(Math.cos(t1) * r1, (Math.random() - 0.5) * 1.2, Math.sin(t1) * r1),
-        new THREE.Vector3(0, (Math.random() - 0.5) * 0.4, 0),
-        new THREE.Vector3(Math.cos(t2) * r2, (Math.random() - 0.5) * 1.2, Math.sin(t2) * r2),
-      ];
-      const geo = new THREE.BufferGeometry().setFromPoints(
-        new THREE.CatmullRomCurve3(pts).getPoints(24)
-      );
-      linesGroup.add(new THREE.Line(geo, new THREE.LineBasicMaterial({
-        color: LINE_COLORS[i % 3],
-        transparent: true,
-        opacity: 0.16,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })));
+      return { group: cardGroup, cardMat, borderMat };
     }
 
-    // ── Particle Field ────────────────────────────────────────────────────────
-    const PARTICLE_COUNT = 300;
+    // ── Create 3 Floating Message Cards ───────────────────────────────────────
+    const cardsData = [
+      { offset: 0.2,  radius: 3.2, yAmp: 0.8, color: 0x22d3ee, badge: 0xf43f5e, hasBadge: true },
+      { offset: 2.1,  radius: 2.8, yAmp: 0.6, color: 0xa78bfa, badge: 0x10b981, hasBadge: false },
+      { offset: 4.2,  radius: 3.5, yAmp: 0.9, color: 0x34d399, badge: 0xf43f5e, hasBadge: true },
+    ];
+
+    const cardsGroup = new THREE.Group();
+    scene.add(cardsGroup);
+
+    const cardInstances = cardsData.map((cfg) => {
+      const cardObj = createMessageCard({
+        width: 1.7,
+        height: 1.05,
+        cardColor: cfg.color,
+        lineColor: isDark() ? 0x94a3b8 : 0x64748b,
+        badgeColor: cfg.badge,
+        hasBadge: cfg.hasBadge,
+      });
+      cardsGroup.add(cardObj.group);
+      return { ...cardObj, cfg };
+    });
+
+    // ── Create Main Scope Agreement Panel (Left) ─────────────────────────────
+    const mainPanelObj = createMessageCard({
+      width: 2.4,
+      height: 1.6,
+      cardColor: 0x7c5cf8,
+      lineColor: isDark() ? 0xc084fc : 0x6366f1,
+      badgeColor: 0x22d3ee,
+      hasBadge: true,
+    });
+    mainPanelObj.group.position.set(-2.8, 0.2, -0.5);
+    mainPanelObj.group.rotation.set(0.08, 0.22, -0.04);
+    scene.add(mainPanelObj.group);
+
+    // ── Create Scope Ledger Verified Panel (Right) ───────────────────────────
+    const ledgerPanelObj = createMessageCard({
+      width: 2.2,
+      height: 1.4,
+      cardColor: 0x10b981,
+      lineColor: 0x10b981,
+      badgeColor: 0x10b981,
+      hasBadge: false,
+    });
+    ledgerPanelObj.group.position.set(2.9, -0.3, -0.4);
+    ledgerPanelObj.group.rotation.set(0.06, -0.25, 0.03);
+    scene.add(ledgerPanelObj.group);
+
+    // ── Connecting Curved Thread Lines ───────────────────────────────────────
+    const threadLinesGroup = new THREE.Group();
+    scene.add(threadLinesGroup);
+    const THREAD_COLORS = [0x22d3ee, 0x7c5cf8, 0x10b981];
+    for (let i = 0; i < 6; i++) {
+      const t1 = (i / 6) * Math.PI * 2;
+      const pts = [
+        new THREE.Vector3(-3.0, (Math.random() - 0.5) * 1.5, -0.8),
+        new THREE.Vector3(0, (Math.random() - 0.5) * 0.8, 0),
+        new THREE.Vector3(3.0, (Math.random() - 0.5) * 1.5, -0.8),
+      ];
+      const curve = new THREE.CatmullRomCurve3(pts);
+      const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(24));
+      const mat = new THREE.LineBasicMaterial({
+        color: THREAD_COLORS[i % 3],
+        transparent: true,
+        opacity: isDark() ? 0.25 : 0.18,
+        blending: THREE.AdditiveBlending,
+      });
+      threadLinesGroup.add(new THREE.Line(geo, mat));
+    }
+
+    // ── Floating Particle Field ───────────────────────────────────────────────
+    const PARTICLE_COUNT = 220;
     const pPositions = new Float32Array(PARTICLE_COUNT * 3);
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      pPositions[i * 3]     = (Math.random() - 0.5) * 18;
-      pPositions[i * 3 + 1] = (Math.random() - 0.5) * 18;
-      pPositions[i * 3 + 2] = (Math.random() - 0.5) * 18;
+      pPositions[i * 3]     = (Math.random() - 0.5) * 16;
+      pPositions[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      pPositions[i * 3 + 2] = (Math.random() - 0.5) * 12;
     }
     const particleGeo = new THREE.BufferGeometry();
     particleGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-    const particles = new THREE.Points(particleGeo, new THREE.PointsMaterial({
-      size: 0.025,
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.38,
-      sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }));
+    const particles = new THREE.Points(
+      particleGeo,
+      new THREE.PointsMaterial({
+        size: 0.03,
+        color: 0x22d3ee,
+        transparent: true,
+        opacity: isDark() ? 0.45 : 0.3,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+    );
     scene.add(particles);
 
-    // ── Camera keyframes ──────────────────────────────────────────────────────
+    // ── Camera Keyframes & Motion ─────────────────────────────────────────────
     const CAM_KF = [
-      { t: 0,    pos: new THREE.Vector3(0, 0, 5.5)   },
-      { t: 0.35, pos: new THREE.Vector3(2.5, 1, 4.5) },
-      { t: 0.65, pos: new THREE.Vector3(-1.5, 0.5, 6)},
-      { t: 1,    pos: new THREE.Vector3(0, -0.5, 7)  },
+      { t: 0,    pos: new THREE.Vector3(0, 0, 6.2)   },
+      { t: 0.35, pos: new THREE.Vector3(2.2, 0.8, 5.2) },
+      { t: 0.65, pos: new THREE.Vector3(-1.8, 0.4, 6.4)},
+      { t: 1,    pos: new THREE.Vector3(0, -0.4, 7.2)  },
     ];
-    const camPos    = new THREE.Vector3(0, 0, 5.5);
-    const tempPos   = new THREE.Vector3();
-    const lookAtPt  = new THREE.Vector3(0, 0, 0);
+    const camPos   = new THREE.Vector3(0, 0, 6.2);
+    const tempPos  = new THREE.Vector3();
+    const lookAtPt = new THREE.Vector3(0, 0, 0);
 
-    // ── Resize ────────────────────────────────────────────────────────────────
+    // ── Resize Listener ───────────────────────────────────────────────────────
     const onResize = () => {
       if (!mount) return;
       camera.aspect = mount.clientWidth / mount.clientHeight;
@@ -198,10 +252,9 @@ export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeScenePro
     };
     window.addEventListener('resize', onResize);
 
-    // ── Signal loaded ─────────────────────────────────────────────────────────
-    const loadedTimeout = setTimeout(() => onLoaded?.(), 700);
+    const loadedTimeout = setTimeout(() => onLoaded?.(), 600);
 
-    // ── Render loop ───────────────────────────────────────────────────────────
+    // ── Render Loop ───────────────────────────────────────────────────────────
     let animId: number;
     const t0 = performance.now();
 
@@ -209,34 +262,28 @@ export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeScenePro
       animId = requestAnimationFrame(animate);
       const elapsed = (performance.now() - t0) / 1000;
 
-      // Cluster idle rotation + float
-      clusterGroup.rotation.y = elapsed * 0.08;
-      clusterGroup.position.y = Math.sin(elapsed * 0.42) * 0.06;
-
-      // Per-shard rotation
-      shardGroups.forEach((g, i) => {
-        g.rotation.y += SHARDS[i].spd;
-        g.rotation.x += SHARDS[i].spd * 0.5;
-      });
-
-      // Orbit nodes
-      NODE_CONFIGS.forEach(({ r, spd, off }, i) => {
-        const t = elapsed * spd + off;
-        orbitNodes[i].position.set(
-          Math.cos(t) * r,
-          Math.sin(t * 0.7) * (r * 0.3),
-          Math.sin(t) * r
+      // Rotate and bob orbiting message cards
+      cardInstances.forEach(({ group, cfg }, idx) => {
+        const t = elapsed * 0.35 + cfg.offset;
+        group.position.set(
+          Math.cos(t) * cfg.radius,
+          Math.sin(t * 1.2) * cfg.yAmp + Math.sin(elapsed * 0.5 + idx) * 0.15,
+          Math.sin(t) * 0.8 - 0.5
+        );
+        group.rotation.set(
+          0.06 * Math.sin(t),
+          -t * 0.2 + idx * 0.4,
+          0.08 * Math.cos(t * 0.8)
         );
       });
 
-      // Lines & particles drift
-      linesGroup.rotation.y = elapsed * 0.055;
-      particles.rotation.y  = elapsed * 0.015;
-      particles.rotation.x  = Math.sin(elapsed * 0.01) * 0.05;
+      // Subtle float on main panels
+      mainPanelObj.group.position.y = 0.2 + Math.sin(elapsed * 0.48) * 0.08;
+      ledgerPanelObj.group.position.y = -0.3 + Math.sin(elapsed * 0.52 + 1.2) * 0.08;
 
-      // Pulsing point light
-      pl1.intensity = 3.5 + Math.sin(elapsed * 1.4) * 0.6;
-      pl2.intensity = 2.2 + Math.sin(elapsed * 0.9 + 1.2) * 0.5;
+      // Particle & line drift
+      particles.rotation.y = elapsed * 0.02;
+      threadLinesGroup.rotation.y = elapsed * 0.03;
 
       // Scroll-driven camera keyframe interpolation
       const sp = Math.max(0, Math.min(1, scrollProgress.current));
@@ -253,10 +300,10 @@ export function ScopeScene({ mouseRef, scrollProgress, onLoaded }: ScopeScenePro
       tempPos.lerpVectors(from.pos, to.pos, segT);
 
       // Mouse parallax
-      tempPos.x += mouseRef.current.x * 0.45;
-      tempPos.y += mouseRef.current.y * 0.32;
+      tempPos.x += mouseRef.current.x * 0.4;
+      tempPos.y += mouseRef.current.y * 0.28;
 
-      camPos.lerp(tempPos, 0.038);
+      camPos.lerp(tempPos, 0.04);
       camera.position.copy(camPos);
       camera.lookAt(lookAtPt);
 
