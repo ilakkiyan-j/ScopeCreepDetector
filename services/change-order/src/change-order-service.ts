@@ -63,12 +63,18 @@ export async function generateChangeOrderEmail(
   request: ChangeOrderRequest,
   options: ChangeOrderOptions = {}
 ): Promise<ChangeOrderResponse> {
-  const project = await getProject(request.projectId, request.userId);
+  let project = await getProject(request.projectId, request.userId);
+  if (!project && request.fallbackProject) {
+    project = request.fallbackProject;
+  }
   if (!project) {
     throw new ChangeOrderError('PROJECT_NOT_FOUND', `Project ${request.projectId} not found.`);
   }
 
-  const allItems = await getLedgerItems(request.projectId, request.userId);
+  let allItems = await getLedgerItems(request.projectId, request.userId);
+  if (allItems.length === 0 && request.fallbackLedgerItems && request.fallbackLedgerItems.length > 0) {
+    allItems = request.fallbackLedgerItems;
+  }
   const verifiedItems = allItems.filter(
     (item) => item.classification === 'new-ask' && item.verificationStatus === 'verified'
   );

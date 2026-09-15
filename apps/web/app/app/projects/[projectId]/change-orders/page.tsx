@@ -142,21 +142,21 @@ export default function ChangeOrdersPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {response.itemizedSummary.map((row, i) => (
+                      {(response.itemizedSummary || []).map((row, i) => (
                         <TableRow key={i}>
                           <TableCell className="text-foreground">{row.title}</TableCell>
                           <TableCell className="text-muted-foreground">{row.date}</TableCell>
                           <TableCell className="text-right text-foreground">{row.hours}</TableCell>
                           <TableCell className="text-right font-medium text-success">
-                            {formatMoney(row.cost, project.currency)}
+                            {formatMoney(row.cost || 0, project.currency)}
                           </TableCell>
                         </TableRow>
                       ))}
                       <TableRow className="bg-muted/20 font-semibold">
                         <TableCell colSpan={2} className="text-right text-foreground">Total</TableCell>
-                        <TableCell className="text-right text-foreground">{response.totalHours}</TableCell>
+                        <TableCell className="text-right text-foreground">{response.totalHours || 0}</TableCell>
                         <TableCell className="text-right text-success">
-                          {formatMoney(response.totalCost, project.currency)}
+                          {formatMoney(response.totalCost || 0, project.currency)}
                         </TableCell>
                       </TableRow>
                     </TableBody>

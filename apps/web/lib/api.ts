@@ -296,11 +296,22 @@ export const api = {
     return res;
   },
 
-  generateChangeOrder: (request: ChangeOrderRequest) =>
-    json<ChangeOrderResponse>('/api/change-order', {
+  generateChangeOrder: async (request: ChangeOrderRequest) => {
+    // Background cloud sync local mirror if any
+    api.syncLocalProjectsToCloud(request.userId).catch(() => {});
+
+    const localDetail = getLocalProjectDetail(request.projectId);
+    const enriched: ChangeOrderRequest = {
+      ...request,
+      fallbackProject: localDetail?.project,
+      fallbackLedgerItems: localDetail?.ledgerItems,
+    };
+
+    return json<ChangeOrderResponse>('/api/change-order', {
       method: 'POST',
-      body: JSON.stringify(request),
-    }),
+      body: JSON.stringify(enriched),
+    });
+  },
 };
 
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {

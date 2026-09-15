@@ -181,6 +181,8 @@ export interface ChangeOrderRequest {
   customNote?: string;
   /** Owner of the project (mock auth identity for MVP attribution). */
   userId?: string;
+  fallbackProject?: Project;
+  fallbackLedgerItems?: LedgerItem[];
 }
 
 /** API Response: POST /change-order */
