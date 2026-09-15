@@ -58,7 +58,7 @@ export function LoadingScreen({ loaded }: LoadingScreenProps) {
           key="loading"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.7, ease: 'easeOut' } }}
-          className="loading-screen fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070d1a] select-none"
+          className="loading-screen fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background text-foreground select-none"
           aria-label="Loading experience"
           role="status"
         >
@@ -101,10 +101,7 @@ export function LoadingScreen({ loaded }: LoadingScreenProps) {
           </motion.div>
 
           {/* Brand name */}
-          <p
-            className="mb-6 text-xs font-bold uppercase tracking-[0.28em]"
-            style={{ color: 'rgba(241,245,249,0.5)' }}
-          >
+          <p className="mb-6 text-xs font-bold uppercase tracking-[0.28em] text-foreground/70">
             ALXO
           </p>
 
@@ -117,8 +114,7 @@ export function LoadingScreen({ loaded }: LoadingScreenProps) {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -14, opacity: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="text-center text-xs font-medium"
-                style={{ color: 'rgba(148,163,184,0.7)', letterSpacing: '0.04em' }}
+                className="text-center text-xs font-medium text-muted-foreground tracking-wide"
               >
                 {STATUS_LINES[lineIndex]}
               </motion.p>
@@ -127,16 +123,12 @@ export function LoadingScreen({ loaded }: LoadingScreenProps) {
 
           {/* Progress bar */}
           <div
-            className="relative overflow-hidden rounded-full"
-            style={{ width: 160, height: 2, background: 'rgba(30,41,59,0.8)' }}
+            className="relative overflow-hidden rounded-full bg-muted border border-border/40"
+            style={{ width: 160, height: 3 }}
           >
             <motion.div
-              className="absolute left-0 top-0 h-full rounded-full"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #7c5cf8, #06b6d4)',
-                boxShadow: '0 0 8px rgba(6,182,212,0.6)',
-              }}
+              className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-primary to-brand-accent shadow-glow"
+              style={{ width: `${progress}%` }}
               transition={{ duration: 0.1 }}
             />
           </div>

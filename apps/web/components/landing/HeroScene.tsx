@@ -146,13 +146,7 @@ export function HeroScene({ scrollProgress, onLoaded }: HeroSceneProps) {
       </div>
 
       {/* Bottom-to-top gradient scrim for text legibility */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgba(7,13,26,0.55) 0%, rgba(7,13,26,0.2) 40%, rgba(7,13,26,0.1) 60%, rgba(7,13,26,0.85) 100%)',
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background/60 via-background/20 via-60% to-background/90" />
     </div>
   );
 }

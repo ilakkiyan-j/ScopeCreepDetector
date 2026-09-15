@@ -114,12 +114,12 @@ function Navbar() {
   const { isDarkMode, toggleTheme } = useAuth();
 
   return (
-    <header className="fixed top-0 z-40 w-full border-b border-white/[0.06] bg-[rgba(7,13,26,0.7)] backdrop-blur-xl">
+    <header className="fixed top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="ALXO home">
           <ALXOLogo size={44} />
         </Link>
-        <nav className="ml-12 hidden gap-7 text-sm font-medium text-slate-400 md:flex">
+        <nav className="ml-12 hidden gap-7 text-sm font-medium text-muted-foreground md:flex">
           {[
             { href: '#flow', label: 'The flow' },
             { href: '#showcase', label: 'Showcase' },
@@ -129,14 +129,14 @@ function Navbar() {
             <a
               key={href}
               href={href}
-              className="relative py-1 hover:text-slate-100 transition-colors after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-cyan-400 after:transition-all hover:after:w-full"
+              className="relative py-1 hover:text-foreground transition-colors after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-brand-accent after:transition-all hover:after:w-full"
             >
               {label}
             </a>
           ))}
           <Link
             href="/aws-architecture"
-            className="inline-flex items-center gap-1.5 font-semibold text-primary hover:text-cyan-400 transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-primary hover:text-brand-accent transition-colors"
           >
             <Cloud className="h-4 w-4 text-brand-accent animate-pulse-dot" />
             AWS Architecture
@@ -145,7 +145,7 @@ function Navbar() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href="/sign-in"
-            className="hidden px-3 text-sm font-medium text-slate-400 hover:text-slate-100 transition-colors sm:block"
+            className="hidden px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors sm:block"
           >
             Sign In
           </Link>
@@ -153,9 +153,9 @@ function Navbar() {
             type="button"
             onClick={toggleTheme}
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="rounded-lg p-2 text-slate-400 hover:bg-white/[0.06] hover:text-slate-100 transition-colors"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
-            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4" />}
           </button>
           <DemoButton compact id="nav-demo-btn" />
         </div>
@@ -175,14 +175,14 @@ function ScrollCue() {
       className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       aria-hidden="true"
     >
-      <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
+      <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
         Scroll
       </span>
       <motion.div
         animate={{ y: [0, 7, 0] }}
         transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <ChevronDown className="h-4 w-4 text-cyan-400/60" />
+        <ChevronDown className="h-4 w-4 text-brand-accent/70" />
       </motion.div>
     </motion.div>
   );
@@ -192,7 +192,7 @@ function ScrollCue() {
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">
+    <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-accent">
       {children}
     </p>
   );
@@ -237,7 +237,7 @@ export default function LandingPage() {
       {/* Branded loading screen */}
       <LoadingScreen loaded={sceneLoaded} />
 
-      <div className="min-h-screen overflow-x-hidden bg-[#070d1a] text-slate-100">
+      <div className="min-h-screen overflow-x-hidden bg-background text-foreground transition-colors duration-200">
         <Navbar />
 
         <main>
@@ -261,7 +261,7 @@ export default function LandingPage() {
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="mb-8 inline-flex flex-wrap items-center justify-center gap-2"
               >
-                <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-slate-900/60 px-3.5 py-1.5 text-xs font-semibold text-cyan-400 backdrop-blur">
+                <span className="inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-brand-accent backdrop-blur shadow-xs">
                   <Sparkles className="h-3.5 w-3.5" />
                   Scope intelligence for independent teams
                 </span>
@@ -279,12 +279,12 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto max-w-4xl text-5xl font-extrabold leading-[0.96] tracking-[-0.055em] text-slate-50 sm:text-6xl lg:text-7xl"
+                className="mx-auto max-w-4xl text-5xl font-extrabold leading-[0.96] tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl"
                 data-gsap="hero-line"
               >
                 Stop doing extra work for free.
                 <br />
-                <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-brand-gradient bg-clip-text text-transparent">
                   Your agreement should too.
                 </span>
               </motion.h1>
@@ -294,7 +294,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.75, duration: 0.6 }}
-                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg"
+                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg"
                 data-gsap="hero-sub"
               >
                 ALXO turns scattered client conversations into a calm, evidence-backed case for work that wasn't part of the plan.
@@ -314,7 +314,7 @@ export default function LandingPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="group border-white/10 bg-white/[0.04] text-slate-200 hover:border-white/25 hover:bg-white/[0.08]"
+                      className="group border-border/80 bg-card/60 text-foreground hover:bg-muted"
                     >
                       Request access
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -327,7 +327,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
-                className="mt-4 text-xs text-slate-500"
+                className="mt-4 text-xs text-muted-foreground"
               >
                 No credit card · Demo data is ready to explore
               </motion.p>
@@ -337,20 +337,19 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.4, duration: 0.6 }}
-                className="mx-auto mt-16 grid max-w-3xl grid-cols-3 border-y border-white/[0.07] py-5 text-center text-xs sm:text-sm"
-                style={{ background: 'rgba(11,17,32,0.5)', backdropFilter: 'blur(8px)' }}
+                className="mx-auto mt-16 grid max-w-3xl grid-cols-3 border-y border-border/80 bg-card/60 backdrop-blur-md py-5 text-center text-xs sm:text-sm"
               >
                 <div>
-                  <strong className="block text-slate-100">Every request</strong>
-                  <span className="text-slate-500">linked to source</span>
+                  <strong className="block text-foreground">Every request</strong>
+                  <span className="text-muted-foreground">linked to source</span>
                 </div>
-                <div className="border-x border-white/[0.07]">
-                  <strong className="block text-slate-100">Every number</strong>
-                  <span className="text-slate-500">calculated in code</span>
+                <div className="border-x border-border/80">
+                  <strong className="block text-foreground">Every number</strong>
+                  <span className="text-muted-foreground">calculated in code</span>
                 </div>
                 <div>
-                  <strong className="block text-slate-100">Every ask</strong>
-                  <span className="text-slate-500">ready to send</span>
+                  <strong className="block text-foreground">Every ask</strong>
+                  <span className="text-muted-foreground">ready to send</span>
                 </div>
               </motion.div>
             </div>
@@ -367,10 +366,10 @@ export default function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
               <FadeInSection>
                 <Eyebrow>Chapter 01 · the flow</Eyebrow>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
                   From client chat to billing evidence — a conversation becomes a system.
                 </h2>
-                <p className="mt-5 max-w-lg leading-7 text-slate-400">
+                <p className="mt-5 max-w-lg leading-7 text-muted-foreground">
                   Your client thread is no longer a flat pile of messages. It becomes a dimensional map of what was agreed, requested, and worth addressing.
                 </p>
               </FadeInSection>
@@ -389,15 +388,14 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-60px' }}
                     transition={{ duration: 0.5, ease: 'easeOut', delay: i * 0.1 }}
-                    className="group rounded-xl border border-white/[0.07] bg-white/[0.03] p-5 shadow-card transition-all duration-300 hover:-translate-y-2 hover:border-cyan-400/25 hover:shadow-[0_8px_32px_-8px_rgba(34,211,238,0.15)] [transform:perspective(900px)_rotateX(1deg)]"
-                    style={{ backdropFilter: 'blur(8px)' }}
+                    className="group rounded-xl border border-border/80 bg-card/75 p-5 shadow-card transition-all duration-300 hover:-translate-y-2 hover:border-brand-accent/40 hover:shadow-card-hover [transform:perspective(900px)_rotateX(1deg)] backdrop-blur-sm"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs text-slate-500">{step.number}</span>
-                      <Icon className="h-5 w-5 text-cyan-400" />
+                      <span className="font-mono text-xs text-muted-foreground">{step.number}</span>
+                      <Icon className="h-5 w-5 text-brand-accent" />
                     </div>
-                    <h3 className="mt-9 font-semibold text-slate-100">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">{step.body}</p>
+                    <h3 className="mt-9 font-semibold text-foreground">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.body}</p>
                   </motion.article>
                 );
               })}
@@ -412,8 +410,7 @@ export default function LandingPage() {
           <div className="section-rule" />
           <section
             id="ledger"
-            className="relative border-y border-white/[0.05] py-24"
-            style={{ background: 'rgba(11,17,32,0.5)' }}
+            className="relative border-y border-border/80 bg-muted/30 py-24"
           >
             <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
               <FadeInSection>
@@ -421,16 +418,16 @@ export default function LandingPage() {
               </FadeInSection>
               <FadeInSection delay={0.15}>
                 <Eyebrow>Chapter 02 · the evidence</Eyebrow>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
                   A ledger built on evidence, not vibes.
                 </h2>
-                <p className="mt-5 max-w-xl leading-7 text-slate-400">
+                <p className="mt-5 max-w-xl leading-7 text-muted-foreground">
                   Each verified item holds the full story in one place: the client request, the original agreement, the reasoning, and its real impact.
                 </p>
                 <div className="mt-7 space-y-3">
                   {['Source-linked client request', 'Original scope kept visible', 'Hours and value calculated deterministically'].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-sm font-medium text-slate-200">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
+                    <div key={item} className="flex items-center gap-3 text-sm font-medium text-foreground">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
                         <Check className="h-3.5 w-3.5" />
                       </span>
                       {item}
@@ -439,7 +436,7 @@ export default function LandingPage() {
                 </div>
                 <Link
                   href="/sign-in"
-                  className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-cyan-400 group"
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-brand-accent group"
                 >
                   See the evidence workspace
                   <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -453,17 +450,17 @@ export default function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
               <FadeInSection>
                 <Eyebrow>Chapter 03 · the value</Eyebrow>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
                   Why it matters: protect the relationship, not just the margin.
                 </h2>
-                <p className="mt-5 max-w-lg leading-7 text-slate-400">
+                <p className="mt-5 max-w-lg leading-7 text-muted-foreground">
                   Scope creep rarely needs a confrontation. It needs a record that is precise, fair, and easy to act on while the details still matter.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   {['Clearer client conversations', 'Defensible change orders'].map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-300"
+                      className="rounded-full border border-border/80 bg-card/60 px-3 py-1.5 text-xs font-medium text-foreground"
                     >
                       {tag}
                     </span>
@@ -480,28 +477,22 @@ export default function LandingPage() {
           <section className="px-4 pb-28 sm:px-6 lg:px-8">
             <FadeInSection>
               <div
-                className="relative mx-auto max-w-5xl overflow-hidden rounded-2xl px-6 py-20 text-center sm:px-12"
-                style={{
-                  background: 'rgba(11,17,32,0.8)',
-                  border: '1px solid rgba(34,211,238,0.2)',
-                  boxShadow: '0 0 80px -20px rgba(124,92,248,0.25), 0 0 120px -40px rgba(34,211,238,0.15)',
-                  backdropFilter: 'blur(16px)',
-                }}
+                className="relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-brand-accent/30 bg-card/85 px-6 py-20 text-center sm:px-12 shadow-card backdrop-blur-md"
               >
                 {/* Background gradient */}
                 <div
-                  className="absolute inset-0 opacity-60"
+                  className="absolute inset-0 opacity-40 pointer-events-none"
                   style={{
                     background:
-                      'radial-gradient(60% 60% at 20% 10%, rgba(124,92,248,0.12) 0%, transparent 70%)',
+                      'radial-gradient(60% 60% at 20% 10%, rgb(var(--brand-ink) / 0.15) 0%, transparent 70%)',
                   }}
                 />
                 <div className="relative">
                   <Eyebrow>Draw the line with confidence</Eyebrow>
-                  <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
+                  <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
                     Stop letting valuable work disappear into the thread.
                   </h2>
-                  <p className="mx-auto mt-4 max-w-xl leading-7 text-slate-400">
+                  <p className="mx-auto mt-4 max-w-xl leading-7 text-muted-foreground">
                     Open the demo and see what a defensible scope conversation feels like.
                   </p>
                   <div className="mt-8">
@@ -514,15 +505,15 @@ export default function LandingPage() {
         </main>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
-        <footer className="border-t border-white/[0.06] px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-slate-500 sm:flex-row">
+        <footer className="border-t border-border/80 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
             <ALXOLogo size={32} />
             <p>© {new Date().getFullYear()} ALXO · Catch the work hiding between the lines.</p>
             <div className="flex items-center gap-4">
-              <Link href="/aws-architecture" className="hover:text-slate-200 font-medium transition-colors">
+              <Link href="/aws-architecture" className="hover:text-foreground font-medium transition-colors">
                 AWS Architecture Showcase
               </Link>
-              <Link href="/request-access" className="hover:text-slate-200 transition-colors">
+              <Link href="/request-access" className="hover:text-foreground transition-colors">
                 Request access
               </Link>
             </div>
