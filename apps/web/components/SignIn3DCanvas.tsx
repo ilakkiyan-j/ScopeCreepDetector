@@ -39,6 +39,9 @@ class CanvasBoundary extends Component<
   static getDerivedStateFromError() {
     return { failed: true };
   }
+  componentDidCatch(error: Error) {
+    console.warn('[3D Canvas Fallback Activated]:', error.message);
+  }
   render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
