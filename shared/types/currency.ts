@@ -3,7 +3,7 @@
  * Never render a currency symbol in service output — use formatMoney.
  * A currency code identifies the currency; it never performs FX conversion.
  */
-import { Currency } from './types';
+import { Currency } from './index';
 
 const LOCALE_BY_CURRENCY: Record<Currency, string> = {
   INR: 'en-IN',

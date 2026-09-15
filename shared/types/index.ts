@@ -214,4 +214,4 @@ export interface ActivityEvent {
   createdAt: string;
 }
 
-export * from '../currency';
+export * from './currency';
