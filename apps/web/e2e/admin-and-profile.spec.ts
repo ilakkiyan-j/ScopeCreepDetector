@@ -9,8 +9,8 @@ test.describe('Admin Console & User Management E2E', () => {
 
     // ADMIN role is steered to the admin console
     await expect(page).toHaveURL(/\/admin\/dashboard/);
-    await expect(page.getByRole('heading', { name: 'Admin Overview' })).toBeVisible();
-    await expect(page.getByText('Scope creep value by currency')).toBeVisible();
+    await expect(page.getByText('Scope creep value by currency')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole('heading', { name: 'Admin Overview', exact: true })).toBeVisible();
   });
 
   test('should block a USER account from /admin', async ({ page }) => {

@@ -33,7 +33,7 @@ const LEDGER_TABLE = process.env.DYNAMODB_LEDGER_TABLE || 'scope-creep-ledger-it
 const ACTIVITY_TABLE = process.env.DYNAMODB_ACTIVITY_TABLE || 'scope-creep-ledger-activity-dev';
 
 function getAwsClientOptions() {
-  const region = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const region = process.env.APP_AWS_REGION || process.env.AWS_REGION || 'ap-southeast-2';
   const accessKeyId =
     process.env.APP_AWS_ACCESS_KEY_ID || process.env.APP_AWS_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID;
   const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
@@ -42,6 +42,7 @@ function getAwsClientOptions() {
   if (accessKeyId && secretAccessKey) {
     return {
       region,
+      maxAttempts: 1,
       credentials: {
         accessKeyId,
         secretAccessKey,
@@ -50,7 +51,19 @@ function getAwsClientOptions() {
     };
   }
 
-  return { region };
+  return { region, maxAttempts: 1 };
+}
+
+async function withDynamoTimeout<T>(promise: Promise<T>, timeoutMs = 1200): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('DynamoDB timeout')), timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timer!);
+  }
 }
 
 function isMockMode(): boolean {
@@ -94,11 +107,13 @@ export async function saveProject(project: Project, userId?: string): Promise<vo
     const client = new DynamoDBClient(getAwsClientOptions());
     const docClient = DynamoDBDocumentClient.from(client);
 
-    await docClient.send(
-      new PutCommand({
-        TableName: PROJECTS_TABLE,
-        Item: incoming,
-      })
+    await withDynamoTimeout(
+      docClient.send(
+        new PutCommand({
+          TableName: PROJECTS_TABLE,
+          Item: incoming,
+        })
+      )
     );
   } catch (err: any) {
     console.warn(`[DynamoDB Warning] Failed to save project to DynamoDB (${err.message}). Local memory fallback preserved.`);
@@ -112,7 +127,14 @@ export async function saveProject(project: Project, userId?: string): Promise<vo
 export async function getProject(projectId: string, userId?: string): Promise<Project | null> {
   let project: Project | null = null;
 
-  if (!isMockMode()) {
+  if (userId) {
+    project = mockProjectsStore.get(mockKey(userId, projectId)) || null;
+  }
+  if (!project) {
+    project = mockProjectsStore.get(mockKey(DEFAULT_USER_ID, projectId)) || mockProjectsStore.get(projectId) || null;
+  }
+
+  if (!project && !isMockMode()) {
     try {
       const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
       const { DynamoDBDocumentClient, GetCommand } = await import('@aws-sdk/lib-dynamodb');
@@ -120,11 +142,13 @@ export async function getProject(projectId: string, userId?: string): Promise<Pr
       const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
-      const result = await docClient.send(
-        new GetCommand({
-          TableName: PROJECTS_TABLE,
-          Key: { id: projectId },
-        })
+      const result = await withDynamoTimeout(
+        docClient.send(
+          new GetCommand({
+            TableName: PROJECTS_TABLE,
+            Key: { id: projectId },
+          })
+        )
       );
 
       const item = result.Item as Project;
@@ -178,10 +202,12 @@ export async function listProjects(userId?: string): Promise<Project[]> {
       const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
-      const result = await docClient.send(
-        new ScanCommand({
-          TableName: PROJECTS_TABLE,
-        })
+      const result = await withDynamoTimeout(
+        docClient.send(
+          new ScanCommand({
+            TableName: PROJECTS_TABLE,
+          })
+        )
       );
 
       const items = (result.Items as Project[]) || [];
@@ -266,7 +292,14 @@ export async function saveLedgerItems(items: LedgerItem[], userId?: string): Pro
 export async function getLedgerItems(projectId: string, userId?: string): Promise<LedgerItem[]> {
   let items: LedgerItem[] = [];
 
-  if (!isMockMode()) {
+  if (userId) {
+    items = mockLedgerStore.get(mockKey(userId, projectId)) || [];
+  }
+  if (items.length === 0) {
+    items = mockLedgerStore.get(mockKey(DEFAULT_USER_ID, projectId)) || mockLedgerStore.get(projectId) || [];
+  }
+
+  if (items.length === 0 && !isMockMode()) {
     try {
       const { DynamoDBClient } = await import('@aws-sdk/client-dynamodb');
       const { DynamoDBDocumentClient, QueryCommand } = await import('@aws-sdk/lib-dynamodb');
@@ -274,14 +307,16 @@ export async function getLedgerItems(projectId: string, userId?: string): Promis
       const client = new DynamoDBClient(getAwsClientOptions());
       const docClient = DynamoDBDocumentClient.from(client);
 
-      const result = await docClient.send(
-        new QueryCommand({
-          TableName: LEDGER_TABLE,
-          KeyConditionExpression: 'projectId = :pid',
-          ExpressionAttributeValues: {
-            ':pid': projectId,
-          },
-        })
+      const result = await withDynamoTimeout(
+        docClient.send(
+          new QueryCommand({
+            TableName: LEDGER_TABLE,
+            KeyConditionExpression: 'projectId = :pid',
+            ExpressionAttributeValues: {
+              ':pid': projectId,
+            },
+          })
+        )
       );
 
       items = (result.Items as LedgerItem[]) || [];

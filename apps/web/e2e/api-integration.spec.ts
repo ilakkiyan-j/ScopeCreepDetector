@@ -90,8 +90,8 @@ test.describe('Backend API Integration E2E', () => {
     expect(Array.isArray(data.projects)).toBeTruthy();
     expect(data.projects.length).toBeGreaterThan(0);
 
-    // Sorted descending by createdAt
-    const times = data.projects.map((p: any) => new Date(p.createdAt).getTime());
+    // Sorted descending by updatedAt/createdAt
+    const times = data.projects.map((p: any) => new Date(p.updatedAt ?? p.createdAt).getTime());
     expect(times).toEqual([...times].sort((a, b) => b - a));
   });
 

@@ -27,19 +27,14 @@ export function useAdminProjectRows() {
       setError(null);
       try {
         const { projects } = await api.listProjects();
-        const enriched = await Promise.all(
-          projects.map(async (project): Promise<ProjectRow> => {
-            const detail = await api.getProject(project.id, project.userId).catch(() => null);
-            return {
-              project,
-              totals: detail
-                ? detail.totals
-                : { totalHours: 0, totalCost: 0, verifiedCount: 0, reviewCount: 0, rejectedCount: 0 },
-              itemCount: detail?.ledgerItems?.length ?? 0,
-              reviewCount: detail?.totals.reviewCount ?? 0,
-            };
-          })
-        );
+        const enriched = (projects as any[]).map((p): ProjectRow => {
+          return {
+            project: p,
+            totals: p.totals ?? { totalHours: 0, totalCost: 0, verifiedCount: 0, reviewCount: 0, rejectedCount: 0 },
+            itemCount: p.itemCount ?? 0,
+            reviewCount: p.totals?.reviewCount ?? 0,
+          };
+        });
         if (alive) setRows(enriched);
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Failed to load analytics.');
