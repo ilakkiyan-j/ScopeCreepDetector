@@ -243,7 +243,7 @@ export default function LandingPage() {
         <main>
           {/* ── Hero Section (full viewport) ─────────────────────── */}
           <section
-            className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden"
+            className="relative flex min-h-screen flex-col justify-center overflow-hidden pt-24 lg:pt-16 pb-12"
             aria-label="Hero"
           >
             {/* 3D background scene + CSS glow orbs */}
@@ -252,106 +252,114 @@ export default function LandingPage() {
               onLoaded={handleSceneLoaded}
             />
 
-            {/* DOM content overlay */}
-            <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-24 text-center sm:px-6 lg:px-8">
-              {/* Badges */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="mb-8 inline-flex flex-wrap items-center justify-center gap-2"
-              >
-                <span className="inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-brand-accent backdrop-blur shadow-xs">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Scope intelligence for independent teams
-                </span>
-                <Link
-                  href="/aws-architecture"
-                  className="inline-flex items-center gap-2 rounded-full border border-brand-accent/40 bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-brand-accent hover:border-brand-accent hover:bg-card shadow-glow transition-all"
-                >
-                  <Cloud className="h-3.5 w-3.5 animate-pulse-dot" />
-                  Live AWS Architecture Showcase →
-                </Link>
-              </motion.div>
-
-              {/* Headline */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto max-w-4xl text-5xl font-extrabold leading-[0.96] tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl"
-                data-gsap="hero-line"
-              >
-                Stop doing extra work for free.
-                <br />
-                <span className="bg-brand-gradient bg-clip-text text-transparent">
-                  Your agreement should too.
-                </span>
-              </motion.h1>
-
-              {/* Sub-headline */}
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75, duration: 0.6 }}
-                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg"
-                data-gsap="hero-sub"
-              >
-                ALXO turns scattered client conversations into a calm, evidence-backed case for work that wasn't part of the plan.
-              </motion.p>
-
-              {/* CTAs */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.95, duration: 0.6 }}
-                className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
-                data-gsap="hero-cta"
-              >
-                <DemoButton id="hero-demo-btn" />
-                <MagneticButton>
-                  <Link href="/request-access">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="group border-border/80 bg-card/60 text-foreground hover:bg-muted"
+            {/* DOM content overlay - 2-Column Split Grid */}
+            <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+                {/* Left Column: Typography, Badges, CTAs, and Stats */}
+                <div className="flex flex-col items-center text-center lg:col-span-7 lg:items-start lg:text-left">
+                  {/* Badges */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
+                  >
+                    <span className="inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-brand-accent backdrop-blur shadow-xs">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Scope intelligence for independent teams
+                    </span>
+                    <Link
+                      href="/aws-architecture"
+                      className="inline-flex items-center gap-2 rounded-full border border-brand-accent/40 bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-brand-accent hover:border-brand-accent hover:bg-card shadow-glow transition-all"
                     >
-                      Request access
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
-                </MagneticButton>
-              </motion.div>
+                      <Cloud className="h-3.5 w-3.5 animate-pulse-dot" />
+                      Live AWS Architecture Showcase →
+                    </Link>
+                  </motion.div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="mt-4 text-xs text-muted-foreground"
-              >
-                No credit card · Demo data is ready to explore
-              </motion.p>
+                  {/* Headline */}
+                  <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-4xl font-extrabold leading-[1.02] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-6xl text-center lg:text-left max-w-2xl"
+                    data-gsap="hero-line"
+                  >
+                    Stop doing extra work for free.
+                    <br />
+                    <span className="bg-brand-gradient bg-clip-text text-transparent">
+                      Your agreement should too.
+                    </span>
+                  </motion.h1>
 
-              {/* Stats bar */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4, duration: 0.6 }}
-                className="mx-auto mt-16 grid max-w-3xl grid-cols-3 border-y border-border/80 bg-card/60 backdrop-blur-md py-5 text-center text-xs sm:text-sm"
-              >
-                <div>
-                  <strong className="block text-foreground">Every request</strong>
-                  <span className="text-muted-foreground">linked to source</span>
+                  {/* Sub-headline */}
+                  <motion.p
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.75, duration: 0.6 }}
+                    className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg text-center lg:text-left"
+                    data-gsap="hero-sub"
+                  >
+                    ALXO turns scattered client conversations into a calm, evidence-backed case for work that wasn't part of the plan.
+                  </motion.p>
+
+                  {/* CTAs */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.95, duration: 0.6 }}
+                    className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:items-start"
+                    data-gsap="hero-cta"
+                  >
+                    <DemoButton id="hero-demo-btn" />
+                    <MagneticButton>
+                      <Link href="/request-access">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="group border-border/80 bg-card/60 text-foreground hover:bg-muted"
+                        >
+                          Request access
+                          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                        </Button>
+                      </Link>
+                    </MagneticButton>
+                  </motion.div>
+
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                    className="mt-3 text-xs text-muted-foreground text-center lg:text-left"
+                  >
+                    No credit card · Demo data is ready to explore
+                  </motion.p>
+
+                  {/* Stats bar */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4, duration: 0.6 }}
+                    className="mt-10 grid w-full max-w-xl grid-cols-3 rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md p-4 text-center sm:text-left text-xs sm:text-sm shadow-xs"
+                  >
+                    <div className="pr-2 sm:pr-3">
+                      <strong className="block text-foreground font-semibold">Every request</strong>
+                      <span className="text-muted-foreground text-[11px] sm:text-xs">linked to source</span>
+                    </div>
+                    <div className="border-x border-border/80 px-2 sm:px-3">
+                      <strong className="block text-foreground font-semibold">Every number</strong>
+                      <span className="text-muted-foreground text-[11px] sm:text-xs">calculated in code</span>
+                    </div>
+                    <div className="pl-2 sm:pl-3">
+                      <strong className="block text-foreground font-semibold">Every ask</strong>
+                      <span className="text-muted-foreground text-[11px] sm:text-xs">ready to send</span>
+                    </div>
+                  </motion.div>
                 </div>
-                <div className="border-x border-border/80">
-                  <strong className="block text-foreground">Every number</strong>
-                  <span className="text-muted-foreground">calculated in code</span>
-                </div>
-                <div>
-                  <strong className="block text-foreground">Every ask</strong>
-                  <span className="text-muted-foreground">ready to send</span>
-                </div>
-              </motion.div>
+
+                {/* Right Column: Dedicated Visual Slot for 3D Floating Cards Showcase */}
+                <div className="relative hidden lg:block lg:col-span-5 h-[520px] w-full pointer-events-none" aria-hidden="true" />
+              </div>
             </div>
 
             {/* Scroll cue */}

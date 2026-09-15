@@ -26,20 +26,20 @@ function FloatingMessageCards({ mouseRef }: { mouseRef: React.MutableRefObject<{
   }, [mouseRef]);
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
-      {/* Container wrapper with 3D perspective */}
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:justify-end overflow-hidden px-4 sm:px-6 lg:px-12 xl:px-16">
+      {/* Container wrapper with 3D perspective - positioned on right side on desktop */}
       <div
-        className="relative h-[480px] w-[1100px] max-w-[96vw] [perspective:1200px]"
+        className="relative h-[500px] w-full max-w-[1100px] lg:max-w-[540px] xl:max-w-[600px] [perspective:1200px]"
         style={{
           transform: `translate3d(${offset.x}px, ${offset.y}px, 0px)`,
           transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        {/* Card 1: Left floating client chat request */}
+        {/* Card 1: Floating client chat request */}
         <motion.div
-          animate={{ y: [-8, 8, -8], rotateY: [14, 18, 14], rotateX: [4, 8, 4] }}
+          animate={{ y: [-8, 8, -8], rotateY: [12, 16, 12], rotateX: [4, 8, 4] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute left-[2%] top-[12%] w-[320px] rounded-2xl border border-brand-accent/40 bg-card/85 p-4 shadow-card backdrop-blur-md hidden md:block"
+          className="absolute left-[0%] sm:left-[2%] top-[6%] w-[300px] sm:w-[320px] rounded-2xl border border-brand-accent/40 bg-card/90 p-4 shadow-card backdrop-blur-md hidden md:block"
           style={{ transformStyle: 'preserve-3d' }}
         >
           <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
@@ -65,11 +65,11 @@ function FloatingMessageCards({ mouseRef }: { mouseRef: React.MutableRefObject<{
           </div>
         </motion.div>
 
-        {/* Card 2: Right floating scope creep ledger preview */}
+        {/* Card 2: Floating scope creep ledger preview */}
         <motion.div
-          animate={{ y: [10, -10, 10], rotateY: [-16, -12, -16], rotateX: [6, 2, 6] }}
+          animate={{ y: [10, -10, 10], rotateY: [-14, -10, -14], rotateX: [6, 2, 6] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          className="absolute right-[2%] top-[18%] w-[340px] rounded-2xl border border-primary/40 bg-card/90 p-4 shadow-card backdrop-blur-md hidden md:block"
+          className="absolute right-[0%] sm:right-[2%] top-[42%] w-[310px] sm:w-[330px] rounded-2xl border border-primary/40 bg-card/90 p-4 shadow-card backdrop-blur-md hidden md:block"
           style={{ transformStyle: 'preserve-3d' }}
         >
           <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
@@ -104,7 +104,7 @@ function FloatingMessageCards({ mouseRef }: { mouseRef: React.MutableRefObject<{
         <motion.div
           animate={{ y: [-6, 6, -6], scale: [0.98, 1.02, 0.98] }}
           transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-          className="absolute right-[18%] top-[5%] flex items-center gap-2.5 rounded-full border border-danger/40 bg-card/90 px-3.5 py-1.5 shadow-glow backdrop-blur-md hidden lg:flex"
+          className="absolute right-[4%] top-[0%] flex items-center gap-2.5 rounded-full border border-danger/40 bg-card/90 px-3.5 py-1.5 shadow-glow backdrop-blur-md hidden lg:flex"
         >
           <AlertTriangle className="h-3.5 w-3.5 text-danger animate-pulse" />
           <span className="text-xs font-medium text-foreground">
@@ -116,7 +116,7 @@ function FloatingMessageCards({ mouseRef }: { mouseRef: React.MutableRefObject<{
         <motion.div
           animate={{ y: [6, -6, 6], scale: [1, 1.03, 1] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-          className="absolute left-[12%] bottom-[8%] flex items-center gap-2.5 rounded-full border border-brand-accent/40 bg-card/90 px-3.5 py-1.5 shadow-card backdrop-blur-md hidden lg:flex"
+          className="absolute left-[2%] bottom-[4%] flex items-center gap-2.5 rounded-full border border-brand-accent/40 bg-card/90 px-3.5 py-1.5 shadow-card backdrop-blur-md hidden lg:flex"
         >
           <MessageSquare className="h-3.5 w-3.5 text-brand-accent" />
           <span className="text-xs font-medium text-foreground">
