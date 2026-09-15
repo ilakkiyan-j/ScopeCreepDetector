@@ -112,6 +112,8 @@ export interface Project {
   createdAt: string; // ISO string
   /** ISO string — last activity (analysis, verification, change order). Falls back to createdAt. */
   updatedAt?: string;
+  /** Visual & persistence indicator: true if stored only in browser localStorage mirror */
+  isLocalOnly?: boolean;
 }
 
 /** Authoritative Scope Creep Ledger Entry */

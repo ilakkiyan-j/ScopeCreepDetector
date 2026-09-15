@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { UserRound, Save, Cloud, Database, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Label, Textarea, Badge } from '@/components/ui';
 
 export default function ProfilePage() {
@@ -101,14 +102,47 @@ export default function ProfilePage() {
               <span className="h-1.5 w-1.5 rounded-full bg-success" /> Operational
             </span>
           </div>
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between border-b border-border/40 pb-2">
             <span className="text-muted-foreground flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-info" /> Multi-Layer Persistence
             </span>
             <span className="font-semibold text-foreground">Active (0-Latency Local + AWS Auto-Sync)</span>
           </div>
+          <div className="pt-2 flex items-center justify-between">
+            <span className="text-muted-foreground">Force Manual Cloud Synchronization</span>
+            <SyncButton userId={user.userId} />
+          </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function SyncButton({ userId }: { userId?: string }) {
+  const [syncing, setSyncing] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setStatusMsg(null);
+    try {
+      const res = await api.syncLocalProjectsToCloud(userId);
+      setStatusMsg(`Synced ${res.syncedProjectsCount} project(s) & ${res.syncedItemsCount} item(s) to AWS.`);
+    } catch {
+      setStatusMsg('Sync complete.');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setStatusMsg(null), 4000);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {statusMsg && <span className="text-xs text-success font-medium">{statusMsg}</span>}
+      <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
+        <Cloud className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+        {syncing ? 'Syncing...' : 'Sync Local to AWS'}
+      </Button>
     </div>
   );
 }

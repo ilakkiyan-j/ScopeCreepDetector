@@ -166,6 +166,42 @@ export const api = {
     return response;
   },
 
+  syncLocalProjectsToCloud: async (userId?: string) => {
+    const localProjects = getLocalProjects();
+    if (localProjects.length === 0) return { syncedProjectsCount: 0, syncedItemsCount: 0 };
+
+    const ledgers: Record<string, LedgerItem[]> = {};
+    localProjects.forEach((p) => {
+      try {
+        const raw = localStorage.getItem(`${LOCAL_LEDGER_PREFIX}${p.id}`);
+        if (raw) {
+          ledgers[p.id] = JSON.parse(raw);
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+
+    try {
+      const res = await json<{ success: boolean; syncedProjectsCount: number; syncedItemsCount: number }>(
+        '/api/projects/sync',
+        {
+          method: 'POST',
+          body: JSON.stringify({ projects: localProjects, ledgers, userId }),
+        }
+      );
+
+      // Re-mark all local projects as cloud-synced
+      const map = new Map<string, Project>();
+      localProjects.forEach((p) => map.set(p.id, { ...p, isLocalOnly: false }));
+      localStorage.setItem(LOCAL_PROJECTS_KEY, JSON.stringify(Array.from(map.values())));
+
+      return res;
+    } catch {
+      return { syncedProjectsCount: 0, syncedItemsCount: 0 };
+    }
+  },
+
   listProjects: async (userId?: string) => {
     const localProjects = getLocalProjects();
     const serverMap = new Map<string, Project>();
@@ -186,12 +222,21 @@ export const api = {
     }
 
     // Merge any locally created projects that aren't yet in serverMap
+    const unsynced: Project[] = [];
     localProjects.forEach((lp) => {
       if (!serverMap.has(lp.id)) {
         (lp as any).isLocalOnly = true;
         serverMap.set(lp.id, lp);
+        unsynced.push(lp);
       }
     });
+
+    // Background push unsynced local projects to AWS DynamoDB
+    if (unsynced.length > 0) {
+      setTimeout(() => {
+        api.syncLocalProjectsToCloud(userId).catch(() => {});
+      }, 500);
+    }
 
     const merged = Array.from(serverMap.values()).sort(
       (a, b) => new Date(b.updatedAt ?? b.createdAt).getTime() - new Date(a.updatedAt ?? a.createdAt).getTime()
@@ -222,6 +267,10 @@ export const api = {
     const localDetail = getLocalProjectDetail(projectId);
     if (localDetail) {
       (localDetail.project as any).isLocalOnly = true;
+      // Sync to cloud in background
+      setTimeout(() => {
+        api.syncLocalProjectsToCloud(userId).catch(() => {});
+      }, 500);
       return localDetail;
     }
 
